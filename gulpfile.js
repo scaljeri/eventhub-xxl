@@ -24,3 +24,36 @@ gulp.task('default', function () {
             .pipe(rename('eventhub.min.js'))
             .pipe(gulp.dest('.'));
 });
+
+gulp.task('test', function () {
+    var karma = require('karma').server;
+
+    karma.start({
+        autoWatch: false,
+        browsers: [
+            'PhantomJS'
+        ],
+        coverageReporter: {
+            type: 'lcovonly'
+        },
+        frameworks: [
+            'jasmine'
+        ],
+        files: [
+            'eventhub.js',
+            'tests/eventhub.spec.js'
+        ],
+        junitReporter: {
+            outputFile: 'target/junit.xml'
+        },
+        preprocessors: {
+            'app/js/!(lib)/**/*.js': 'coverage'
+        },
+        reporters: [
+            'progress',
+            'junit',
+            'coverage'
+        ],
+        singleRun: true
+    });
+});

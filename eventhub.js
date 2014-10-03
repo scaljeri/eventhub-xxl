@@ -1,4 +1,4 @@
-(function (console, DEBUG) {
+window.EventHub = (function (console, DEBUG) {
     'use strict';
 
     var DEFAULTS = {
@@ -59,7 +59,7 @@
                 /* PRIVATE PROPERTY
                  * Default setting, to allow the same callback to be registered multiple times to the same event
                  */, ALLOW_MULTIPLE: true
-            };
+            }
     /**
      * EventHub facilitates event-based communication between different parts of an application (Event driven system).
      * Events can be namespaced too.
@@ -87,7 +87,7 @@
      * @param {Object} [options] configuration parameters
      *      @param {Boolean} [options.allowMultiple=TRUE] accept multiple registrations of the same function for the same event
      */
-     Eventhub = function (options) {
+            , EventHub = function (options) {
                 Object.defineProperty(this, '_rootStack',
                         {
                             value: { __stack: { triggers: 0, on: [], one: []} }, enumerable: false // hide it
@@ -102,9 +102,9 @@
                 this.allowMultiple = options && typeof(options.allowMultiple) === 'boolean' ? options.allowMultiple : DEFAULTS.ALLOW_MULTIPLE;
             };
 
-    Eventhub.EVENT_MODE = DEFAULTS.EVENT_MODE;                   // set static properies
+    EventHub.EVENT_MODE = DEFAULTS.EVENT_MODE;                   // set static properies
 
-    Eventhub.prototype = {
+    EventHub.prototype = {
         /**
          * Generates an unique event name
          * @method generateUniqueEventName
@@ -596,4 +596,6 @@
         }
         return retVal;
     }
-})(console, DEBUG);
+
+    return EventHub;
+})(window.console, window.DEBUG||false);
