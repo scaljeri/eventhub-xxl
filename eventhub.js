@@ -1,6 +1,6 @@
 window.Sway = window.Sway || {}; // make sure it exists
 
-(function (ns, DEBUG) {
+(function (DEBUG) {
     var DEFAULTS = {
                 /**
                  * Contains available event modes. For example, if <tt>bar.foo</tt> is triggered, both event modes do the opposite
