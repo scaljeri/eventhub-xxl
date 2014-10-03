@@ -1,0 +1,25 @@
+{
+  "name": "javascript-eventhub",
+  "version": "1.0.0",
+  "homepage": "https://github.com/scaljeri/javascript-eventhub",
+  "authors": [
+    "Lucas Calje <lucas@calje.eu>"
+  ],
+  "description": "Event Hub for event-based applications",
+  "main": "eventhub.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "javascript",
+    "eventhub"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

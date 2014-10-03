@@ -1,6 +1,6 @@
-window.Sway = window.Sway || {}; // make sure it exists
+(function (console, DEBUG) {
+    'use strict';
 
-(function (DEBUG) {
     var DEFAULTS = {
                 /**
                  * Contains available event modes. For example, if <tt>bar.foo</tt> is triggered, both event modes do the opposite
@@ -59,7 +59,7 @@ window.Sway = window.Sway || {}; // make sure it exists
                 /* PRIVATE PROPERTY
                  * Default setting, to allow the same callback to be registered multiple times to the same event
                  */, ALLOW_MULTIPLE: true
-            }
+            };
     /**
      * EventHub facilitates event-based communication between different parts of an application (Event driven system).
      * Events can be namespaced too.
@@ -87,7 +87,7 @@ window.Sway = window.Sway || {}; // make sure it exists
      * @param {Object} [options] configuration parameters
      *      @param {Boolean} [options.allowMultiple=TRUE] accept multiple registrations of the same function for the same event
      */
-            , Eventhub = function (options) {
+     Eventhub = function (options) {
                 Object.defineProperty(this, '_rootStack',
                         {
                             value: { __stack: { triggers: 0, on: [], one: []} }, enumerable: false // hide it
@@ -457,8 +457,8 @@ window.Sway = window.Sway || {}; // make sure it exists
                 , retVal = 0;
 
         for (i = list.length - 1; i >= 0; i--) {
-            if ((list[i].fn === callback || !callback) && list[i].eventMode === options.eventMode
-                    && (options.isOne === list[i].isOne || options.isOne === undefined || options.isOne === null)
+            if ((list[i].fn === callback || !callback) && list[i].eventMode === options.eventMode &&
+                    (options.isOne === list[i].isOne || options.isOne === undefined || options.isOne === null)
             /*
              && ( options.isOne === undefined || options.isOne === null || options.isOne === list[i].isOne
              || (options.isOne === false && list[i].isOne === undefined)
@@ -596,4 +596,4 @@ window.Sway = window.Sway || {}; // make sure it exists
         }
         return retVal;
     }
-})(DEBUG);
+})(console, DEBUG);
