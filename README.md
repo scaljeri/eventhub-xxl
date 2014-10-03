@@ -26,32 +26,33 @@ The advantage of namespaced events is that it facilitates triggering groups of e
 
 Contains available event modes. For example, if <tt>bar.foo</tt> is triggered, both event modes do the opposite
                      
-                                       | |                                     / \
-                        ---------------| |-----------------     ---------------| |-----------------
-                        | bar          | |                |     | bar          | |                |
-                        |   -----------| |-----------     |     |   -----------| |-----------     |
-                        |   |bar.foo   \ /          |     |     |   |bar.foo   | |          |     |
-                        |   -------------------------     |     |   -------------------------     |
-                        |        Event CAPTURING          |     |        Event BUBBLING           |
-                        -----------------------------------     -----------------------------------
+                              | |                                     / \
+               ---------------| |-----------------     ---------------| |-----------------
+               | bar          | |                |     | bar          | |                |
+               |   -----------| |-----------     |     |   -----------| |-----------     |
+               |   |bar.foo   \ /          |     |     |   |bar.foo   | |          |     |
+               |   -------------------------     |     |   -------------------------     |
+               |        Event CAPTURING          |     |        Event BUBBLING           |
+               -----------------------------------     -----------------------------------
                      
 The event model implemented in this class does both, going from <tt>bubbling</tt> to the execution of all callbacks in <tt>bar.foo</tt>,
 then back in <tt>capturing</tt> mode
                      
-                                                        | |  / \
-                                       -----------------| |--| |-----------------
-                                       | bar            | |  | |                |
-                                       |   -------------| |--| |-----------     |
-                                       |   |bar.foo     \ /  | |          |     |
-                                       |   --------------------------------     |
-                                       |               event model              |
-                                       ------------------------------------------
+                                                 | |  / \
+                                -----------------| |--| |-----------------
+                                | bar            | |  | |                |
+                                |   -------------| |--| |-----------     |
+                                |   |bar.foo     \ /  | |          |     |
+                                |   --------------------------------     |
+                                |               event model              |
+                                ------------------------------------------
                       
     eventHub.on('bar.foo', myFunc1) ;
     eventHub.on('bar', myFunc2, { eventMode: EventHub.EVENT_MODE.CAPTURING }) ;
     eventHub.on('bar', myFunc3, { eventMode: EventHub.EVENT_MODE.BUBBLING }) ;
     eventHub.on('bar', myFunc4, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
-    eventHub.trigger('bar.foo') ; // -> callback execution order: myFunc3, myFunc4, myFunc1, myFunc2 and myFunc4
+    eventHub.trigger('bar.foo') ; 
+    // -> callback execution order: myFunc3, myFunc4, myFunc1, myFunc2 and myFunc4
 
 ### Gulp tasks ###
 
