@@ -34,7 +34,8 @@ gulp.task('test', function () {
             'PhantomJS'
         ],
         coverageReporter: {
-            type: 'lcovonly'
+            type : 'text',
+            dir : 'target/coverage/'
         },
         frameworks: [
             'jasmine'
@@ -47,10 +48,9 @@ gulp.task('test', function () {
             outputFile: 'target/junit.xml'
         },
         preprocessors: {
-            'app/js/!(lib)/**/*.js': 'coverage'
+            'eventhub.js': 'coverage'
         },
         reporters: [
-            'progress',
             'junit',
             'coverage'
         ],
