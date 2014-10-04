@@ -5,6 +5,9 @@ var gulp = require('gulp'),
         uglify = require('gulp-uglify'),
         options =  {
             globals: {
+                Eventhub: true,
+                console: true,
+                DEBUG: true
             },
             laxcomma: true,
             strict: true,
