@@ -2,9 +2,12 @@ javascript-eventhub [![Build Status](https://travis-ci.org/scaljeri/javascript-e
 ======================
 
 This is an Event Hub for event-based applications. It facilitates event-based communication between different 
-parts of an application (Event driven system). Events can be namespaced 
+parts of an application (Event driven system). It support AMD and runs as a node package service too!
+  
+Event names should have the form
                                                 
-    bar.foo1
+    bar
+    bar.foo1  // --> namespaced event name
     bar.foo2
     bar.bar1.foo1
     
