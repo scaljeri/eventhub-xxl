@@ -1,5 +1,3 @@
-window.DEBUG = false;
-
 describe("window.EventHub", function() {
 
     // globals

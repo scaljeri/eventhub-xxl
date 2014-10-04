@@ -1,4 +1,8 @@
-window.EventHub = (function (console, DEBUG) {
+if (typeof exports === 'undefined') {
+    exports = window;
+}
+
+exports.EventHub = (function (console, DEBUG) {
     'use strict';
 
     var DEFAULTS = {
@@ -598,4 +602,11 @@ window.EventHub = (function (console, DEBUG) {
     }
 
     return EventHub;
-})(window.console, window.DEBUG||false);
+})(console, typeof DEBUG === 'undefined' ? false : DEBUG);
+
+// AMD compatible
+if (typeof window !== 'undefined' && typeof window.define === "function" && window.define.amd) {
+    window.define('EventHub', [], function () {
+        return window.EventHub;
+    });
+}
