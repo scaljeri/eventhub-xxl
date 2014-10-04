@@ -65,4 +65,8 @@ Install the dependencies as follows
 To minify the library
 
     $> gulp
+    
+To run the tests
+
+    $> gulp test
 
