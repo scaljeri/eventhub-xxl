@@ -5,12 +5,13 @@ var gulp = require('gulp'),
         uglify = require('gulp-uglify'),
         options =  {
             globals: {
-                Eventhub: true,
+                exports: true,
                 console: true,
-                DEBUG: true
+                DEBUG: true,
+                window: true
             },
             laxcomma: true,
-            strict: true,
+            strict: false,
             validthis: true,
             undef: true
         };
