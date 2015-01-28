@@ -1,4 +1,4 @@
-javascript-eventhub [![Build Status](https://travis-ci.org/scaljeri/javascript-eventhub.png)](https://travis-ci.org/scaljeri/javascript-eventhub)
+Javascript Eventhub library [![Build Status](https://travis-ci.org/scaljeri/javascript-eventhub.png)](https://travis-ci.org/scaljeri/javascript-eventhub)
 ======================
 
 This is an Event Hub for event-based applications. It facilitates event-based communication between different 
