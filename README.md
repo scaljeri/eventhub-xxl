@@ -69,4 +69,8 @@ To minify the library
 To run the tests
 
     $> gulp test
+    
+### Installation ###
+
+    $> bower install javascript-eventhub
 

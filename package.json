@@ -1,5 +1,5 @@
 {
-  "name": "javascript-dependency-injection",
+  "name": "javascript-eventhub",
   "version": "1.0.0",
   "description": "Event Hub for event-based applications",
   "main": "eventhub.js",
