@@ -1,5 +1,7 @@
-Javascript Eventhub library [![Build Status](https://travis-ci.org/scaljeri/javascript-eventhub.png)](https://travis-ci.org/scaljeri/javascript-eventhub)
-======================
+[![Build Status](https://travis-ci.org/scaljeri/javascript-eventhub.png)](https://travis-ci.org/scaljeri/javascript-eventhub) 
+[![Coverage Status](https://coveralls.io/repos/scaljeri/javascript-eventhub/badge.svg)](https://coveralls.io/r/scaljeri/javascript-eventhub)
+
+Javascript Eventhub Library 
 
 This is an Event Hub for event-based applications. It facilitates event-based communication between different 
 parts of an application (Event driven system). It support AMD and runs as a node package service too!
