@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/scaljeri/javascript-eventhub.png)](https://travis-ci.org/scaljeri/javascript-eventhub) 
-[![Coverage Status](https://coveralls.io/repos/scaljeri/javascript-eventhub/badge.svg)](https://coveralls.io/r/scaljeri/javascript-eventhub)
+[![Build Status][travis-url]][travis-image] [![Coverage Status][coveralls-url]][coveralls-image] [![Dependency Status][depstat-image]][depstat-url] [![devDependency Status][depstat-dev-image]][depstat-dev-url]
 
 Javascript Eventhub Library 
 
@@ -76,3 +75,14 @@ To run the tests
 
     $> bower install javascript-eventhub
 
+[travis-url]: https://travis-ci.org/scaljeri/javascript-eventhub.png
+[travis-image]: https://travis-ci.org/scaljeri/javascript-eventhub
+
+[coveralls-url]: https://coveralls.io/repos/scaljeri/javascript-eventhub/badge.svg
+[coveralls-image]: https://coveralls.io/r/scaljeri/javascript-eventhub
+
+[depstat-url]: https://david-dm.org/scaljeri/javascript-eventhub
+[depstat-image]: https://david-dm.org/scaljeri/javascript-eventhub.svg
+
+[depstat-dev-url]: https://david-dm.org/scaljeri/javascript-eventhub#info=devDependencies
+[depstat-dev-image]: https://david-dm.org/scaljeri/javascript-eventhub/dev-status.svg
