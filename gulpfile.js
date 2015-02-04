@@ -35,8 +35,8 @@ gulp.task('test', function () {
             'PhantomJS'
         ],
         coverageReporter: {
-            type : 'text',
-            dir : 'target/coverage/'
+            type : 'lcov',
+            dir : 'coverage/'
         },
         frameworks: [
             'jasmine'
@@ -57,4 +57,9 @@ gulp.task('test', function () {
         ],
         singleRun: true
     });
+});
+
+gulp.task('coveralls', ['test'], function () {
+    gulp.src('coverage/**/lcov.info')
+      .pipe(coveralls());
 });

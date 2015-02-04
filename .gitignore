@@ -2,3 +2,5 @@ eventhub.min.js
 node_modules
 .idea
 /target/junit.xml
+coverage
+/.coveralls.yml
