@@ -3,6 +3,7 @@ var gulp = require('gulp'),
         filelog = require('gulp-filelog'),
         rename = require('gulp-rename'),
         uglify = require('gulp-uglify'),
+        jshint = require('gulp-jshint'),
         options =  {
             globals: {
                 exports: true,
@@ -24,6 +25,12 @@ gulp.task('default', function () {
             .pipe(uglify())
             .pipe(rename('eventhub.min.js'))
             .pipe(gulp.dest('.'));
+});
+
+gulp.task('lint', function() {
+  return gulp.src('eventhub.js')
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'));
 });
 
 gulp.task('test', function () {
