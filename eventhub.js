@@ -371,7 +371,7 @@ exports.EventHub = (function (console, DEBUG) {
     /*
      Returns the trigger count of this stack
      */
-    function getTriggerCount(stack, options) {
+    function getTriggerCount(stack) {
         return stack.triggers;
     }
 
@@ -607,6 +607,8 @@ exports.EventHub = (function (console, DEBUG) {
 // AMD compatible
 if (typeof window !== 'undefined' && typeof window.define === "function" && window.define.amd) {
     window.define('EventHub', [], function () {
+        'use strict';
+
         return window.EventHub;
     });
 }
