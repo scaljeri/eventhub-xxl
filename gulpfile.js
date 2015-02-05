@@ -4,6 +4,7 @@ var gulp = require('gulp'),
         rename = require('gulp-rename'),
         uglify = require('gulp-uglify'),
         jshint = require('gulp-jshint'),
+	coveralls = require('gulp-coveralls'),
         options =  {
             globals: {
                 exports: true,
