@@ -290,7 +290,7 @@ exports.EventHub = (function (console, DEBUG) {
          * TODO: etype is not used
          */
         , countCallbacks: function (eventName, options) {
-            return stackCounter(eventName, options, getCallbackCount);
+            return stackCounter.call(this, eventName, options, getCallbackCount);
         }
 
         /**
@@ -302,7 +302,7 @@ exports.EventHub = (function (console, DEBUG) {
          * @return {Number} trigger count. -1 is returned if the event name does not exist
          */
         , countTriggers: function (eventName, options) {
-            return stackCounter(eventName, options, getTriggerCount);
+            return stackCounter.call(this, eventName, options, getTriggerCount);
         }
     };
 
