@@ -290,9 +290,7 @@ exports.EventHub = (function (console, DEBUG) {
          * TODO: etype is not used
          */
         , countCallbacks: function (eventName, options) {
-            options = initializeOptions(eventName, options) ;
-            var namespace = getStack.call(this, eventName) ;
-            return sumPropertyInNamespace(namespace, getCallbackCount, options || {}) ;
+            return stackCounter(eventName, options, getCallbackCount);
         }
 
         /**
@@ -304,20 +302,20 @@ exports.EventHub = (function (console, DEBUG) {
          * @return {Number} trigger count. -1 is returned if the event name does not exist
          */
         , countTriggers: function (eventName, options) {
-            options = initializeOptions(eventName, options) ;
-            var stack = getStack.call(this, eventName) ;
-            return sumPropertyInNamespace(stack, getTriggerCount, options || {}) ;
+            return stackCounter(eventName, options, getTriggerCount);
         }
     };
 
     /* ******** PRIVATE HELPER FUNCTION *********** */
 
-    function initializeOptions(eventName, options) {
+    function stackCounter(eventName, options ,handler) {
         if (!eventName)  // if event-name is not defined --> traverse
         {
                 (options = options || {}).traverse = true ;
         }
-        return options ;
+
+        var stack = getStack.call(this, eventName) ;
+        return sumPropertyInNamespace(stack, handler, options || {}) ;
     }
 
     function setDisableEvent(eventName, state, options) {
