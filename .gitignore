@@ -4,3 +4,4 @@ node_modules
 /target/junit.xml
 coverage
 /.coveralls.yml
+/npm-debug.log
