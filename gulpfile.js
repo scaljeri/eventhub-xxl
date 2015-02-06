@@ -63,7 +63,7 @@ gulp.task('test', function () {
             'junit',
             'coverage'
         ],
-        singleRun: false
+        singleRun: true
     });
 });
 

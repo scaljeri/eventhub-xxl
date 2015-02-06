@@ -1,5 +1,4 @@
 [![Build Status][travis-url]][travis-image] [![Coverage Status][coveralls-url]][coveralls-image] [![Dependency Status][depstat-image]][depstat-url] [![devDependency Status][depstat-dev-image]][depstat-dev-url] [![Code Climate](https://codeclimate.com/github/scaljeri/javascript-eventhub/badges/gpa.svg)](https://codeclimate.com/github/scaljeri/javascript-eventhub)
-[![Coverage Status](https://coveralls.io/repos/scaljeri/javascript-inheritance/badge.svg?branch=master)](https://coveralls.io/r/scaljeri/javascript-inheritance?branch=master)
 
 Javascript Eventhub Library 
 
