@@ -60,6 +60,7 @@ gulp.task('test', function () {
             'eventhub.js': 'coverage'
         },
         reporters: [
+            'dots',
             'junit',
             'coverage'
         ],
