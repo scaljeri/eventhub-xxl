@@ -28,6 +28,8 @@ Note that using namespaces facilitates triggering groups of callbacks
     
 ### Event modes
 
+[![Join the chat at https://gitter.im/scaljeri/javascript-eventhub](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scaljeri/javascript-eventhub?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 An event mode defines the propagation direction of an event. An event in capturing mode  goes from the root to the target. 
 In bubbling mode the event goes from the target up to the root. Assume an event is trigger on `bar.foo`
                      
