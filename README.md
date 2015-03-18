@@ -2,6 +2,8 @@
 
 [![Build Status][travis-url]][travis-image] [![Coverage Status][coveralls-url]][coveralls-image] [![Dependency Status][depstat-image]][depstat-url] [![devDependency Status][depstat-dev-image]][depstat-dev-url] [![Code Climate](https://codeclimate.com/github/scaljeri/javascript-eventhub/badges/gpa.svg)](https://codeclimate.com/github/scaljeri/javascript-eventhub) [![Inline docs](http://inch-ci.org/github/scaljeri/javascript-eventhub.svg?branch=master)](http://inch-ci.org/github/scaljeri/javascript-eventhub)
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scaljeri/javascript-eventhub?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Javascript Eventhub Library 
 
 This is an Event Hub for event-based applications. It facilitates event-based communication between different 
