@@ -90,3 +90,7 @@ To run the tests
 
 [depstat-dev-url]: https://david-dm.org/scaljeri/javascript-eventhub#info=devDependencies
 [depstat-dev-image]: https://david-dm.org/scaljeri/javascript-eventhub/dev-status.svg
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/scaljeri/javascript-eventhub/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
