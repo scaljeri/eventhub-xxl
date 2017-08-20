@@ -83,5 +83,10 @@
     "yui"           : false,    // Yahoo User Interface
 
     // Custom Globals
-    "globals"       : {"console": true, "DEBUG": true, "exports": true}        // additional predefined global variables
+    "globals"       : {"console": true,
+                       "DEBUG": true,
+                       "exports": true,
+                       "require": true,
+                       "expect": true,
+                       "spyOn": true}        // additional predefined global variables
 }
