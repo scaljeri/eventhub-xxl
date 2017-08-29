@@ -437,10 +437,11 @@ function checkInput(eventName, callback) {
     {
         retVal = true;
     }
-    else if (DEBUG)   // Wrong...
+    else
     {
         console.warn("Cannot bind the callback function to the event nam ( eventName=" + eventName + ",  callback=" + callback + ")");
     }
+
     return retVal;
 }
 
@@ -587,7 +588,7 @@ function triggerEvent(stack, data, options) {
 
     if (!stack.disabled)                                          // if this node/event is disabled, don't traverse the namespace deeper
     {
-        for (var ns in stack) {
+        for (let ns in stack) {
             if (ns === "__stack") {
                 retVal += callCallbacks(stack, data);
             }
