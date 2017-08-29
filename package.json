@@ -1,8 +1,8 @@
 {
-  "name": "javascript-eventhub",
+  "name": "eventhub-xxl",
   "version": "2.0.0-rc.1",
   "description": "Event Hub for event-based applications",
-  "main": "eventhub.js",
+  "main": "./src/eventhub.js",
   "scripts": {
     "build": "mkdir -p dist && ./node_modules/.bin/babel ./src/di.js --out-file dist/di.js && ./node_modules/.bin/uglifyjs dist/di.js -o dist/di.min.js",
     "lint": "./node_modules/.bin/eslint -c .eslintrc ./src/di.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/scaljeri/javascript-eventhub.git"
+    "url": "https://github.com/scaljeri/eventhub-xxl.git"
   },
   "keywords": [
     "javascript",
@@ -22,9 +22,9 @@
   "author": "Lucas Calje <lucas@calje.eu>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/scaljeri/javascript-eventhub/issues"
+    "url": "https://github.com/scaljeri/eventhub-xxl/issues"
   },
-  "homepage": "https://github.com/scaljeri/javascript-eventhub",
+  "homepage": "https://github.com/scaljeri/eventhub-xxl",
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
     "chai": "^4.0.2",
@@ -53,6 +53,5 @@
     "jsdoc": "^3.5.4",
     "jsdoc-escape-at": "^1.0.1",
     "nyc": "^11.0.3",
-    "uglify-js": "^3.0.27"
   }
 }
