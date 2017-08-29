@@ -1,4 +1,4 @@
-[![Coverage Status][coveralls-url]][coveralls-image] [![Dependency Status][depstat-image]][depstat-url] [![devDependency Status][depstat-dev-image]][depstat-dev-url] [![Code Climate](https://codeclimate.com/github/scaljeri/javascript-eventhub/badges/gpa.svg)](https://codeclimate.com/github/scaljeri/javascript-eventhub) [![Inline docs](http://inch-ci.org/github/scaljeri/javascript-eventhub.svg?branch=master)](http://inch-ci.org/github/scaljeri/javascript-eventhub)
+[![Coverage Status][coveralls-url]][coveralls-image] [![Dependency Status][depstat-image]][depstat-url] [![devDependency Status][depstat-dev-image]][depstat-dev-url] [![Code Climate](https://codeclimate.com/github/scaljeri/eventhub-xxl/badges/gpa.svg)](https://codeclimate.com/github/scaljeri/eventhub-xxl) [![Inline docs](http://inch-ci.org/github/scaljeri/eventhub-xxl.svg?branch=master)](http://inch-ci.org/github/scaljeri/eventhub-xxl)
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scaljeri/javascript-eventhub?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -75,16 +75,16 @@ To run the tests
     
 ### Installation ###
 
-    $> yarn add javascript-eventhub
+    $> yarn add eventhub-xxl
 
-[travis-url]: https://travis-ci.org/scaljeri/javascript-eventhub.png
-[travis-image]: https://travis-ci.org/scaljeri/javascript-eventhub
+[travis-url]: https://travis-ci.org/scaljeri/eventhub-xxl.png
+[travis-image]: https://travis-ci.org/scaljeri/eventhub-xxl
 
-[coveralls-url]: https://coveralls.io/repos/scaljeri/javascript-eventhub/badge.svg
-[coveralls-image]: https://coveralls.io/r/scaljeri/javascript-eventhub
+[coveralls-url]: https://coveralls.io/repos/scaljeri/eventhub-xxl/badge.svg
+[coveralls-image]: https://coveralls.io/r/scaljeri/eventhub-xxl
 
-[depstat-url]: https://david-dm.org/scaljeri/javascript-eventhub
-[depstat-image]: https://david-dm.org/scaljeri/javascript-eventhub.svg
+[depstat-url]: https://david-dm.org/scaljeri/eventhub-xxl
+[depstat-image]: https://david-dm.org/scaljeri/eventhub-xxl.svg
 
-[depstat-dev-url]: https://david-dm.org/scaljeri/javascript-eventhub#info=devDependencies
-[depstat-dev-image]: https://david-dm.org/scaljeri/javascript-eventhub/dev-status.svg
+[depstat-dev-url]: https://david-dm.org/scaljeri/eventhub-xxl#info=devDependencies
+[depstat-dev-image]: https://david-dm.org/scaljeri/eventhub-xxl/dev-status.svg
