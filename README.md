@@ -5,7 +5,7 @@
 Javascript Eventhub Library 
 
 This is an Event Hub for event-based applications. It facilitates event-based communication between different 
-parts of an application (Event driven system). It support AMD and runs as a node package service too!
+parts of an application (Event driven system). 
   
 Event names should have the form
                                                 
@@ -59,11 +59,11 @@ Then it back in **capturing** mode
     eventHub.trigger('bar.foo') ; 
     // -> callback execution order: myFunc3, myFunc4, myFunc1, myFunc2 and myFunc4
 
-### Gulp tasks ###
+### Yarn tasks ###
 
 Install the dependencies as follows
 
-    $> npm install
+    $> yarn install 
 
 To minify the library
 
@@ -71,11 +71,11 @@ To minify the library
     
 To run the tests
 
-    $> gulp test
+    $> yarn test
     
 ### Installation ###
 
-    $> bower install javascript-eventhub
+    $> yarn add javascript-eventhub
 
 [travis-url]: https://travis-ci.org/scaljeri/javascript-eventhub.png
 [travis-image]: https://travis-ci.org/scaljeri/javascript-eventhub
