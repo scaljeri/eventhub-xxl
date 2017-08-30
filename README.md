@@ -1,5 +1,4 @@
 [![CircleCI][circleci-img]][circleci-url]
-[![CircleCI](https://circleci.com/gh/scaljeri/eventhub-xxl/tree/master.svg?style=svg)](https://circleci.com/gh/scaljeri/eventhub-xxl/tree/master)
 
 [![Coverage Status][coveralls-url]][coveralls-image] [![Dependency Status][depstat-image]][depstat-url] [![devDependency Status][depstat-dev-image]][depstat-dev-url] [![Code Climate](https://codeclimate.com/github/scaljeri/eventhub-xxl/badges/gpa.svg)](https://codeclimate.com/github/scaljeri/eventhub-xxl) [![Inline docs](http://inch-ci.org/github/scaljeri/eventhub-xxl.svg?branch=master)](http://inch-ci.org/github/scaljeri/eventhub-xxl)
 
