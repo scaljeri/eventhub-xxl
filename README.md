@@ -1,4 +1,4 @@
-[![CircleCI]([circleci-img])]([circleci-url])
+[![CircleCI][circleci-img]][circleci-url]
 [![CircleCI](https://circleci.com/gh/scaljeri/eventhub-xxl/tree/master.svg?style=svg)](https://circleci.com/gh/scaljeri/eventhub-xxl/tree/master)
 
 [![Coverage Status][coveralls-url]][coveralls-image] [![Dependency Status][depstat-image]][depstat-url] [![devDependency Status][depstat-dev-image]][depstat-dev-url] [![Code Climate](https://codeclimate.com/github/scaljeri/eventhub-xxl/badges/gpa.svg)](https://codeclimate.com/github/scaljeri/eventhub-xxl) [![Inline docs](http://inch-ci.org/github/scaljeri/eventhub-xxl.svg?branch=master)](http://inch-ci.org/github/scaljeri/eventhub-xxl)
@@ -84,7 +84,7 @@ To run the tests
 [travis-image]: https://travis-ci.org/scaljeri/eventhub-xxl
 
 [coveralls-url]: https://coveralls.io/repos/scaljeri/eventhub-xxl/badge.svg
-[coveralls-image]: https://coveralls.io/r/scaljeri/eventhub-xxl
+[coveralls-image]: https://coveralls.io/github/scaljeri/eventhub-xxl?branch=master
 
 [depstat-url]: https://david-dm.org/scaljeri/eventhub-xxl
 [depstat-image]: https://david-dm.org/scaljeri/eventhub-xxl.svg
