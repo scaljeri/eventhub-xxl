@@ -1,6 +1,6 @@
 import {EventHub, chai, should, sinon} from './helpers';
 
-describe('Eventhub', () => {
+xdescribe('Eventhub', () => {
     // globals
     let cbs, eh, mySpy1, mySpy2, mySpy3, mySpy4;
     beforeEach(() => {

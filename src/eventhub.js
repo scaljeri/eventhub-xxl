@@ -1,6 +1,13 @@
 const DEFAULTS = {
     /**
-     * Contains available event modes. For example, if <tt>bar.foo</tt> is triggered, both event modes do the opposite
+     * The traversal of event namespaces can be split into three different types:
+     *
+     *     CAPTURING
+     *     BUBBLING
+     *     CAPTURING and BUBBLING => BOTH
+     *
+     * For example, if <tt>bar.foo</tt> is triggered, CAPTURING and BUBBLING do the opposite and are executed
+     * one after the other as follows
      *
      *                    | |                                     / \
      *     ---------------| |-----------------     ---------------| |-----------------
@@ -11,8 +18,8 @@ const DEFAULTS = {
      *     |        Event CAPTURING          |     |        Event BUBBLING           |
      *     -----------------------------------     -----------------------------------
      *
-     * The event model implemented in this class does both, going from <tt>bubbling</tt> to the execution of all callbacks in <tt>bar.foo</tt>,
-     * then back in <tt>capturing</tt> mode
+     * When an event is triggered, first the events propagates in CAPTURING mode and then in BUBBLING mode
+     *
      *
      *                                   | |  / \
      *                  -----------------| |--| |-----------------
@@ -27,11 +34,18 @@ const DEFAULTS = {
      *     eventHub.on('bar', myFunc2, { eventMode: EventHub.EVENT_MODE.CAPTURING }) ;
      *     eventHub.on('bar', myFunc3, { eventMode: EventHub.EVENT_MODE.BUBBLING }) ;
      *     eventHub.on('bar', myFunc4, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
-     *     eventHub.trigger('bar.foo') ; // -> callback execution order: myFunc3, myFunc4, myFunc1, myFunc2 and myFunc4
+     *     eventHub.trigger('bar.foo') ;
+     *
+     * Callback execution order:
+     *
+     *     myFunc2
+     *     myFunc4
+     *     myFunc1
+     *     myFunc3
+     *     myFunc4
      *
      * @property {Object} EVENT_MODE
      * @static
-     * @example
      */
     EVENT_MODE: {
         /**
@@ -53,14 +67,15 @@ const DEFAULTS = {
          */
         , BOTH: 'both'
     }
-    /* PRIVATE PROPERTY
-     * Default setting, to allow the same callback to be registered multiple times to the same event
+    /**
+     * Default setting, used to determine if the same callback can be registered multiple times to the same event
+     * @private
      */, ALLOW_MULTIPLE: true
 };
 
 /**
- * EventHub facilitates event-based communication between different parts of an application (Event driven system).
- * Events can be namespaced too.
+ * EventHub-XXL facilitates event-based communication between different parts of an application (Event driven system).
+ * Events can be namespaced enabling the execution of triggering groups of callbacks.
  *
  * Namespaces are separated by a dot, like
  *
@@ -68,14 +83,14 @@ const DEFAULTS = {
  *     bar.foo2
  *     bar.bar1.foo1
  *
- * A Namespace and an Eventname are actually more or less the same thing:
+ * The event name is always the last part (from the last dot to the end) of the given string. Everyghing else is part of the Namespace
  *
- *     eventHub.on('bar', myFunc1) ;
- *     eventHub.on('bar.foo1', myFunc2) ;
+ *     eventHub.on('bar', myFunc1) ;             // event name: 'bar'
+ *     eventHub.on('bar.foo1', myFunc2) ;        // event name: 'foo1', namespace: 'bar'
  *     eventHub.on('bar.bar1', myFunc3) ;
- *     eventHub.on('bar.bar1.foo1', myFunc4) ;
+ *     eventHub.on('bar.bar1.foo1', myFunc4) ;   // event name: 'foo1', namespace: 'bar.bar1'
  *
- * The advantage of namespaced events is that it facilitates triggering groups of events
+ * The advantage of namespaced events is that groups of callbacks can be triggered at once
  *
  *     eventHub.trigger('bar') ;        // --> triggers: myFunc1, myFunc2, myFunc3 and myFunc4
  *     eventHub.trigger('bar.bar1');    // --> triggers: myFunc3 and myFunc4
@@ -86,7 +101,7 @@ const DEFAULTS = {
  *      @param {Boolean} [options.allowMultiple=TRUE] accept multiple registrations of the same function for the same event
  */
 export class EventHub {
-    constructor(options) {
+    constructor(options = {}) {
         Object.defineProperty(this, '_rootStack',
             {
                 value: {__stack: {triggers: 0, on: [], one: []}}, enumerable: false // hide it
@@ -98,13 +113,15 @@ export class EventHub {
                 , writable: true                // otherwise ++ will not work
             }
         );
-        this.allowMultiple = options && typeof(options.allowMultiple) === 'boolean' ? options.allowMultiple : DEFAULTS.ALLOW_MULTIPLE;
+
+        this.allowMultiple = typeof options.allowMultiple  === 'boolean' ? options.allowMultiple : DEFAULTS.ALLOW_MULTIPLE;
     }
 
-    static EVENT_MODE = DEFAULTS.EVENT_MODE;              // set static properies
+    static EVENT_MODE = DEFAULTS.EVENT_MODE;              // set static properties
 
     /**
      * Generates an unique event name
+     *
      * @method generateUniqueEventName
      * @return {String} unique event name
      */
@@ -113,10 +130,11 @@ export class EventHub {
     }
 
     /**
+     * If set to true, one function can be registered multiple times for the same event
      *
      * @method setAllowMultiple
      * @chainable
-     * @param {Boolean} state accept multiple registrations of the same function for the same event
+     * @param {Boolean} state accept multiple registrations
      */
     setAllowMultiple(state) {
         this.allowMultiple = state;
@@ -131,7 +149,7 @@ export class EventHub {
      * @param {Object} [options] configuration
      *  @param {Boolean} [options.traverse=false] disable nested events as wel if set to TRUE
      */
-    enable(eventName, options) {
+    enable(eventName, options = {}) {
         return setDisableEvent.call(this, eventName, false, options);
     }
 
@@ -190,6 +208,7 @@ export class EventHub {
     trigger(eventName, data, options) {
         let retVal = 0
             , namespace;
+
         if ((namespace = getStack.call(this, eventName)) && !!!namespace.__stack.disabled)  // check if the eventName exists and not being disabled
         {
             retVal = triggerEventCapture.call(this, eventName || '', data, options || {}) +              // NOTE that eventName can be empty!
@@ -221,7 +240,7 @@ export class EventHub {
      eventHub.on( 'ui.update', this.update.bind(this), {prepend: true, eventMode: EventHub.EVENT_MODE.CAPTURING} ) ;
      */
     on(eventName, callback, options) {
-        return addCallbackToStack.call(this, eventName, callback, options || {}) !== null;
+        return !!addCallbackToStack.call(this, eventName, callback, options || {});
     }
 
 
@@ -439,7 +458,7 @@ function checkInput(eventName, callback) {
     }
     else
     {
-        console.warn("Cannot bind the callback function to the event nam ( eventName=" + eventName + ",  callback=" + callback + ")");
+        console.warn(`Cannot bind the callback function to the event name ( eventName=${eventName},  callback=${callback})`);
     }
 
     return retVal;
@@ -499,7 +518,8 @@ function removeCallback(list, callback, options) {
  not exist 'null' is returned
  */
 function getStack(namespace) {
-    let i, parts = namespace ? namespace.split('.') : []   // parts of the event namespaces
+    let i
+        , parts = namespace ? namespace.split('.') : []   // parts of the event namespaces
         , stack = this._rootStack;                  // root of the callback stack
 
     for (i = 0; i < parts.length; i++) {
@@ -508,6 +528,7 @@ function getStack(namespace) {
         }
         stack = stack[parts[i]];                       // traverse a level deeper into the stack
     }
+
     return stack;                                      // return the stack matched by 'eventName'
 }
 
@@ -519,23 +540,25 @@ function getStack(namespace) {
  * does not exist, it is created.
  */
 function createStack(namespace) {
-    let i,  parts = namespace.split('.')                    // split the namespace
-        , stack = this._rootStack;                     // start at the root
+    let i
+        , parts = namespace.split('.')             // split the namespace
+        , stack = this._rootStack;                 // start at the root
 
-    for (i = 0; i < parts.length; i++)              // traverse the stack
+    for (i = 0; i < parts.length; i++)             // traverse the stack
     {
-        if (!stack[parts[i]])                           // if not exists --> create it
+        if (!stack[parts[i]])                      // if not exists --> create it
         {
             stack[parts[i]] = {
-                __stack: {                              // holds all info for this namespace (not the child namespaces)
-                    on: []                              // callback stack
-                    , parent: stack                     // parent namespace/object
-                    , triggers: 0                       // count triggers
-                    , disabled: false                   // by default the namespace/event is enabled
+                __stack: {                         // holds all info for this namespace (not the child namespaces)
+                    on: []                         // callback stack
+                    , parent: stack                // parent namespace/object
+                    , triggers: 0                  // count triggers
+                    , disabled: false              // by default the namespace/event is enabled
                 }
             };
         }
-        stack = stack[parts[i]];                       // go into the (newly created) namespace
+
+        stack = stack[parts[i]];                   // go into the (newly created) namespace
     }
 
     return stack;

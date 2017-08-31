@@ -43,7 +43,7 @@ In bubbling mode the event goes from the target up to the root. Assume an event 
         -----------------------------------     -----------------------------------
                      
 The event model implemented does both, going from **bubbling** and executes all callbacks from `bar` and next the ones from `bar.foo`.
-Then it back in **capturing** mode
+Then it goes back in **capturing** mode
                      
                                           | |  / \
                          -----------------| |--| |-----------------
