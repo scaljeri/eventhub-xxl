@@ -13,7 +13,7 @@ describe('Eventhub - Capturing mode', () => {
             cb6: (value) => data.push({name: 'cb6', value})
         };
 
-    beforeEach(() => {
+    before(() => {
         eh = new EventHub();
         data = [];
 

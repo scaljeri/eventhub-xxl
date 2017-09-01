@@ -30,9 +30,15 @@ Note that using namespaces facilitates triggering groups of callbacks
     
 ### Event modes
 
-An event mode defines the propagation direction of an event. An event in capturing mode  goes from the root to the target. 
-In bubbling mode the event goes from the target up to the root. Assume an event is trigger on `bar.foo`
-                     
+The traversal of event namespaces can be split into three different types:
+
+    CAPTURING
+    BUBBLING
+    CAPTURING and BUBBLING => BOTH
+
+For example, if `bar.foo` is triggered, CAPTURING and BUBBLING do the opposite and are executed
+one after the other as follows
+
                        | |                                     / \
         ---------------| |-----------------     ---------------| |-----------------
         | bar          | |                |     | bar          | |                |
@@ -42,9 +48,8 @@ In bubbling mode the event goes from the target up to the root. Assume an event 
         |        Event CAPTURING          |     |        Event BUBBLING           |
         -----------------------------------     -----------------------------------
                      
-The event model implemented does both, going from **bubbling** and executes all callbacks from `bar` and next the ones from `bar.foo`.
-Then it goes back in **capturing** mode
-                     
+When an event is triggered, first the events propagates in CAPTURING mode and then in BUBBLING mode
+                       
                                           | |  / \
                          -----------------| |--| |-----------------
                          | bar            | |  | |                |
@@ -58,8 +63,18 @@ Then it goes back in **capturing** mode
     eventHub.on('bar', myFunc2, { eventMode: EventHub.EVENT_MODE.CAPTURING }) ;
     eventHub.on('bar', myFunc3, { eventMode: EventHub.EVENT_MODE.BUBBLING }) ;
     eventHub.on('bar', myFunc4, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
+    eventHub.on('bar.foo', myFuncXYZ, { eventMode: EventHub.EVENT_MODE.BOTH) ;
     eventHub.trigger('bar.foo') ; 
-    // -> callback execution order: myFunc3, myFunc4, myFunc1, myFunc2 and myFunc4
+    
+Callback execution order:
+
+    myFunc2     // capturing 
+    myFunc4     // capturing
+    myFunc1     // end-point
+    myFunc3     // bubbling
+    myFunc4     // bubbling
+    
+Callbacks which belong to an event-mode can't be triggered directly, which is why `myFuncXYZ` was not executed
 
 ### Yarn tasks ###
 
