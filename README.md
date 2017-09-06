@@ -23,7 +23,7 @@ To register an event do
     eventHub.on('bar.bar1', myFunc3) ;
     eventHub.on('bar.bar1.foo1', myFunc4) ;
     
-Note that using namespaces facilitates triggering groups of callbacks
+With namespaces it is possible to trigger groups of callbacks
                                                 
     eventHub.trigger('bar') ;        // --> triggers: myFunc1, myFunc2, myFunc3 and myFunc4
     eventHub.trigger('bar.bar1');    // --> triggers: myFunc3 and myFunc4

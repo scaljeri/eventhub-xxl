@@ -13,7 +13,7 @@ describe('Eventhub - Capturing mode', () => {
             cb6: (value) => data.push({name: 'cb6', value})
         };
 
-    before(() => {
+    beforeEach(() => {
         eh = new EventHub();
         data = [];
 
@@ -23,21 +23,31 @@ describe('Eventhub - Capturing mode', () => {
         eh.on('a.b', cbs.cb5);
         eh.on('a.b.c', cbs.cb6);
         eh.on('a.b', cbs.cb3, {eventMode: EventHub.EVENT_MODE.CAPTURING, prepend: true});
+        eh.on('a.b.c.d', cbs.cb3, {eventMode: EventHub.EVENT_MODE.CAPTURING});
 
         count = eh.trigger('a.b.c', 1);
     });
 
-    it('should count CAPTURING callbacks', () => {
-        eh.countCallbacks('a', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(1);
-        eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(2);
-        eh.countCallbacks('a.b.c', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(1);
+    it('should count the trigger', () => {
+        eh.countTriggers('a').should.equal(0);
+        eh.countTriggers('a.b').should.equal(0);
+        eh.countTriggers('a.b.c').should.equal(1);
+        eh.countTriggers('a.b.c.d').should.equal(0);
     });
 
-    it('should count and traverse the namespace', () => {
+    it('should count callbacks', () => {
+        eh.countCallbacks('a', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(0);
+        eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(1);
+        eh.countCallbacks('a.b.c', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(3);
+        eh.countCallbacks('a.b.c.d', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(4);
+        eh.countCallbacks('a.b.c.d.e', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(5);
+    });
+
+    it('should count but not traverse', () => {
         eh.countCallbacks('a.b', {
             eventMode: EventHub.EVENT_MODE.CAPTURING,
             traverse: true
-        }).should.equal(3);
+        }).should.equal(1);
     });
 
     it('should have triggered the correct amount of callbacks', () => {

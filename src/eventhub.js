@@ -308,8 +308,22 @@ export class EventHub {
      * @return {Number} the number of callback functions inside 'eventName'. Returns -1 if the event or namespace does not exists
      * TODO: etype is not used
      */
-    countCallbacks(eventName, options) {
-        return stackCounter.call(this, eventName, options, getCallbackCount);
+    countCallbacks(eventName = '', options = {}) {
+        let retVal = 0;
+        if (options.eventMode === EventHub.EVENT_MODE.CAPTURING ||
+            options.eventMode === EventHub.EVENT_MODE.BOTH) {
+            retVal = triggerEventCapture.call(this, eventName, null, options, () => {})
+        }
+
+        if (options.eventMode === EventHub.EVENT_MODE.BUBBLING ||
+            options.eventMode === EventHub.EVENT_MODE.BOTH) {
+            retVal = triggerEventBubble.call(this, getStack.call(this, eventName), null, options, () => {})
+        } else if (!options.eventMode) {
+            debugger;
+            retVal = triggerEvent(getStack.call(this, eventName), null, options, () => {});
+        }
+
+        return retVal; // stackCounter.call(this, eventName, options, getCallbackCount);
     }
 
     /**
@@ -320,7 +334,7 @@ export class EventHub {
      *      @param {Boolean} [options.traverse=false] traverse all nested namepsaces
      * @return {Number} trigger count. -1 is returned if the event name does not exist
      */
-    countTriggers(eventName, options) {
+    countTriggers(eventName, options = {}) {
         return stackCounter.call(this, eventName, options, getTriggerCount);
     }
 }
@@ -330,7 +344,7 @@ export class EventHub {
 function stackCounter(eventName, options, handler) {
     if (!eventName)  // if event-name is not defined --> traverse
     {
-        (options = options || {}).traverse = true;
+        options.traverse = true;
     }
 
     const stack = getStack.call(this, eventName);
@@ -564,7 +578,7 @@ function createStack(namespace) {
     return stack;
 }
 
-function triggerEventCapture(eventName, data, options) {
+function triggerEventCapture(eventName, data, options, dispatcher) {
     let i
         , namespace = this._rootStack
         , parts = eventName.split('.') || []
@@ -578,14 +592,14 @@ function triggerEventCapture(eventName, data, options) {
         for (i = 0; i < parts.length - 1; i++)           // loop through namespace (not the last part)
         {
             namespace = namespace[parts[i]];
-            retVal += callCallbacks(namespace, data, eventMode);
+            retVal += callCallbacks(namespace, data, eventMode, dispatcher);
         }
     }
 
     return retVal;
 }
 
-function triggerEventBubble(namespace, data, options) {
+function triggerEventBubble(namespace, data, options, dispatcher) {
     //var namespace = namespaces.__stack.parent ;
     let eventMode = DEFAULTS.EVENT_MODE.BUBBLING
         , retVal = 0;
@@ -595,7 +609,7 @@ function triggerEventBubble(namespace, data, options) {
         options.eventMode === DEFAULTS.EVENT_MODE.BUBBLING) {
         while (namespace.__stack.parent) {
             namespace = namespace.__stack.parent;
-            retVal += callCallbacks(namespace, data, eventMode);
+            retVal += callCallbacks(namespace, data, eventMode, dispatcher);
         }
     }
 
@@ -606,18 +620,18 @@ function triggerEventBubble(namespace, data, options) {
  * Namespaces can in theory be many levels deep, like: "aaaaa.bbbbbb.cccccc._stack"
  * To traverse this namespace and trigger everything inside it, this function is called recursively (only if options.traverse === true).
  */
-function triggerEvent(stack, data, options) {
+function triggerEvent(stack, data, options, dispatcher) {
     let retVal = 0;
 
     if (!stack.disabled)                                          // if this node/event is disabled, don't traverse the namespace deeper
     {
         for (let ns in stack) {
             if (ns === "__stack") {
-                retVal += callCallbacks(stack, data);
+                retVal += callCallbacks(stack, data, null, dispatcher);
             }
             else if (options.traverse)                             // found a deeper nested namespace
             {
-                retVal += triggerEvent(stack[ns], data, options); // nested namespaces. NOTE that the 'eventName' is omitted!!
+                retVal += triggerEvent(stack[ns], data, options, dispatcher); // nested namespaces. NOTE that the 'eventName' is omitted!!
             }
         }
     }
@@ -633,7 +647,7 @@ function triggerEvent(stack, data, options) {
  @param {Anything} data
  @param {String} eventMode accepted values
  */
-function callCallbacks(namespace, data, eventMode) {
+function callCallbacks(namespace, data, eventMode, dispatcher) {
     let i
         , retVal = 0
         , callback;
@@ -642,11 +656,12 @@ function callCallbacks(namespace, data, eventMode) {
         for (i = 0; i < namespace.__stack.on.length; i++)            // loop through all callbacks
         {
             callback = namespace.__stack.on[i];
-            if (callback.eventMode === eventMode ||
+            if ((!callback.eventMode && !eventMode) ||
+                callback.eventMode === eventMode ||
                 eventMode && callback.eventMode === DEFAULTS.EVENT_MODE.BOTH)  // trigger callbacks depending on their event-mode
             {
                 retVal++;                                               // count this trigger
-                callback.fn(data);                                      // call the callback
+                dispatcher ? dispatcher(callback, data, eventMode) : callback.fn(data);                                      // call the callback
                 if (callback.isOne) {
                     namespace.__stack.on.splice(i--, 1);                // remove callback for index is i, and afterwards fix loop index with i--
                 }
