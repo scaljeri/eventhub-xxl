@@ -43,7 +43,14 @@ describe('#off', () => {
 
     it('should only remove a `isOne` callback', () => {
         eh.off('a', cbs.cb2, { isOne: true, traverse: true});
-        eh.countCallbacks('a.b').should.equal(1);
+        eh.countCallbacks('a.b', {traverse: true}).should.equal(1);
         eh.countCallbacks('a.b.c').should.equal(0);
     });
+
+    it('should remove without a callback given', () => {
+        eh.off('a', {traverse: true});
+
+        eh.countCallbacks('a.b', {traverse: true}).should.equal(0);
+    });
+
 });
