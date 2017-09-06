@@ -317,9 +317,8 @@ export class EventHub {
 
         if (options.eventMode === EventHub.EVENT_MODE.BUBBLING ||
             options.eventMode === EventHub.EVENT_MODE.BOTH) {
-            retVal = triggerEventBubble.call(this, getStack.call(this, eventName), null, options, () => {})
+            retVal += triggerEventBubble.call(this, getStack.call(this, eventName), null, options, () => {})
         } else if (!options.eventMode) {
-            debugger;
             retVal = triggerEvent(getStack.call(this, eventName), null, options, () => {});
         }
 
@@ -445,9 +444,8 @@ function canAddCallback(callbacks, callback, options) {
     if (this.allowMultiple === false) {
         for (i = 0; i < callbacks.length; i++) {
             if (callbacks[i].fn === callback && (
-                    callbacks[i].eventMode === eventMode ||                                 // they are identical
-                    callbacks[i].eventMode && eventMode === DEFAULTS.EVENT_MODE.BOTH ||     // both defined and one set to 'BOTH'
-                    eventMode && callbacks[i].eventMode === DEFAULTS.EVENT_MODE.BOTH )      // idem (switched)
+                    (!callback.eventMode && !eventMode)         // Both not defined
+                    || callbacks[i].eventMode === eventMode)    // Identical
             ) {
                 retVal = false;
                 break;

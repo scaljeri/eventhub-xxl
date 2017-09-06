@@ -1,6 +1,6 @@
 import {EventHub} from './helpers';
 
-describe('Eventhub - Both mode', () => {
+describe('Eventmode: Both', () => {
     let eh,
         count,
         data,
@@ -38,17 +38,17 @@ describe('Eventhub - Both mode', () => {
 
     it('should count callbacks', () => {
         eh.countCallbacks('a', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(0);
-        eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(1);
-        eh.countCallbacks('a.b.c', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(3);
-        eh.countCallbacks('a.b.c.d', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(4);
-        eh.countCallbacks('a.b.c.d.e', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(5);
+        eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(2);
+        eh.countCallbacks('a.b.c', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(6);
+        eh.countCallbacks('a.b.c.d', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(8);
+        eh.countCallbacks('a.b.c.d.e', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(10);
     });
 
     it('should count but not traverse', () => {
         eh.countCallbacks('a.b', {
             eventMode: EventHub.EVENT_MODE.BOTH,
             traverse: true
-        }).should.equal(1);
+        }).should.equal(2);
     });
 
     it('should have triggered the correct amount of callbacks', () => {
