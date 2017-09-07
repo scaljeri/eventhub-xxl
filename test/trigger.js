@@ -59,4 +59,33 @@ describe('Eventhub - #trigger', () => {
             item.value.should.equal(1);
         });
     });
+
+    describe('Without eventname', () => {
+        beforeEach(() => {
+            data = [];
+        });
+
+        it('should trigger nothing', () => {
+            eh.trigger(null, 1).should.equal(0);
+            data.length.should.equal(0);
+        });
+
+        describe('Traverse', () => {
+            beforeEach(() => {
+                count = eh.trigger(null, 1, {traverse: true});
+
+            });
+
+            it('should traverse from the rootNode', () => {
+                count.should.equal(8);
+            });
+
+            it('should have called everything in the right order', () => {
+                data[0].name.should.equal('cb1');
+                data[1].name.should.equal('cb2');
+                data[2].name.should.equal('cb5');
+                data.length.should.equal(8);
+            });
+        })
+    })
 });

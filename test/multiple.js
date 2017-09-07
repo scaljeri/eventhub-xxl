@@ -47,17 +47,23 @@ describe('Multiple', () => {
     });
 
     describe('Disabled', () => {
+        const isAdded = [];
+
         beforeEach(() => {
             eh = new EventHub({allowMultiple: false});
-            eh.on('a', cbs.cb1);
-            eh.on('a', cbs.cb1);
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH});
-            eh.on('a.b', cbs.cb1); // not used
+            isAdded.push(eh.on('a', cbs.cb1));
+            isAdded.push(eh.on('a', cbs.cb1));
+            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING}));
+            isAdded.push(eh.one('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING}));
+            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING}));
+            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING}));
+            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH}));
+            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH}));
+            isAdded.push(eh.on('a.b', cbs.cb1)); // not used
+        });
+
+        it('should have added only unique callbacks', () => {
+           isAdded.should.eql([true, false, true, false, true, false, true, false, true]);
         });
 
         it('should have registered cb1 only once for each event mode', () => {
