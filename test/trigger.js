@@ -1,6 +1,6 @@
-import {EventHub} from './helpers';
+import {EventHub, sinon} from './helpers';
 
-describe('Eventhub - #trigger', () => {
+describe('#trigger', () => {
     let eh,
         count,
         data,
@@ -27,6 +27,15 @@ describe('Eventhub - #trigger', () => {
         eh.on('a.b.c.d.e', cbs.cb3);                // 5
 
         count = eh.trigger('a.b.c', 1);
+    });
+
+    it('should not register a non-function as a callback', () => {
+        sinon.stub(console, 'warn');
+        eh.on('a.b', {});
+
+        console.warn.should.have.been.calledWithMatch(/Cannot.*eventName=a.b/);
+
+        console.warn.restore();
     });
 
     it('should count the trigger', () => {

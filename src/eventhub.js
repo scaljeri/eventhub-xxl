@@ -393,21 +393,6 @@ function sumPropertyInNamespace(namespace, propertyFunc, options) {
 }
 
 /*
- Returns the number of callback function present in this stack
- */
-function getCallbackCount(stack, options) {
-    let i, retVal = 0;
-
-    for (i in stack.on) {
-        if (stack.on[i].eventMode === options.eventMode) {
-            retVal++;
-        }
-    }
-
-    return retVal;
-}
-
-/*
  Returns the trigger count of this stack
  */
 function getTriggerCount(stack) {
