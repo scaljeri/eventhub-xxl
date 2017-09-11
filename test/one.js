@@ -20,20 +20,20 @@ describe('#one', () => {
         eh = new EventHub();
         data = [];
 
-        eh.one('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});   // 1
-        eh.one('a', cbs.cb6, {eventMode: EventHub.EVENT_MODE.BUBBLING});    // 8
-        eh.one('a', cbs.cb7, {eventMode: EventHub.EVENT_MODE.BOTH});        // 2
-        eh.one('a.b', cbs.cb2, {eventMode: EventHub.EVENT_MODE.CAPTURING}); // 3
-        eh.one('a.b', cbs.cb8, {eventMode: EventHub.EVENT_MODE.BOTH});      // 4
-        eh.one('a.b', cbs.cb9, {eventMode: EventHub.EVENT_MODE.BUBBLING});  // 7
-        eh.on('a.b.c', cbs.cb3);                                            // 5
-        eh.one('a.b.c', cbs.cb4);                                           // 6
+        eh.one('a.b.c', cbs.cb4);                                   // 6
+        eh.on('a.b.c', cbs.cb3);                                    // 5
+        eh.one('a.b', cbs.cb9, {phase: EventHub.PHASES.BUBBLING});  // 7
+        eh.one('a.b', cbs.cb8, {phase: EventHub.PHASES.BOTH});      // 4
+        eh.one('a.b', cbs.cb2, {phase: EventHub.PHASES.CAPTURING}); // 3
+        eh.one('a', cbs.cb7, {phase: EventHub.PHASES.BOTH});        // 2
+        eh.one('a', cbs.cb6, {phase: EventHub.PHASES.BUBBLING});    // 8
+        eh.one('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING});   // 1
 
         count = eh.trigger('a.b.c', 1);
     });
 
     it('should have a correct trigger count', () => {
-        count.should.equal(8);
+        count.should.equal(10);
     });
 
     it('should have removed the callbacks', () => {

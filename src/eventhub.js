@@ -47,6 +47,11 @@ const DEFAULTS = {
      * @property {Object} EVENT_MODE
      * @static
      */
+    PHASES: {
+        CAPTURING: 'capture'           // event goes from root to target
+        , BUBBLING: 'bubble'            // event goes from target to root
+        , BOTH: 'both'
+    },
     EVENT_MODE: {
         /**
          * Defines the capturing event mode
@@ -104,7 +109,7 @@ export class EventHub {
     constructor(options = {}) {
         Object.defineProperty(this, '_rootStack',
             {
-                value: {__stack: {triggers: 0, on: [], one: []}}, enumerable: false // hide it
+                value: {__stack: {disabled: false, triggers: 0, on: [], one: []}}, enumerable: false // hide it
             }
         );
         Object.defineProperty(this, '_eventNameIndex',
@@ -114,10 +119,11 @@ export class EventHub {
             }
         );
 
-        this.allowMultiple = typeof options.allowMultiple  === 'boolean' ? options.allowMultiple : DEFAULTS.ALLOW_MULTIPLE;
+        this.allowMultiple = typeof options.allowMultiple === 'boolean' ? options.allowMultiple : DEFAULTS.ALLOW_MULTIPLE;
     }
 
     static EVENT_MODE = DEFAULTS.EVENT_MODE;              // set static properties
+    static PHASES = DEFAULTS.PHASES;              // set static properties
 
     /**
      * Generates an unique event name
@@ -173,7 +179,7 @@ export class EventHub {
      * @param {Object} [options] configuration
      *  @param {Boolean} [options.traverse=false] disable nested events as wel if set to TRUE
      */
-    disable(eventName, options) {
+    disable(eventName, options = {}) {
         return setDisableEvent.call(this, eventName, true, options);
     }
 
@@ -205,21 +211,37 @@ export class EventHub {
      eventHub.trigger('ui.update', {authenticated: true} ) ;               // trigger the 'update' event inside the 'ui' namespace
      eventHub.trigger('ui', {authenticated: true}, {traverse: true} ) ;    // trigger all nested events and namespaces inside the 'ui' namespace
      */
-    trigger(eventName, data, options) {
-        let retVal = 0
-            , namespace;
+    trigger(event, data, options, dispatcher) {
+        let retVal = 0;
 
-        if ((namespace = getStack.call(this, eventName)) && !!!namespace.__stack.disabled)  // check if the eventName exists and not being disabled
-        {
-            retVal = triggerEventCapture.call(this, eventName || '', data, options || {}) +              // NOTE that eventName can be empty!
-                triggerEvent(namespace, data, options || {}) +
-                ((eventName || '').match(/\./) !== null ? triggerEventBubble(namespace, data, options || {}) : 0);
+        if (!options) {
+            options = {};
+        } else if (options.phase === DEFAULTS.PHASES.BOTH) {
+            options = Object.assign({}, options, {phase: null});
+        }
+
+        if (this.canTrigger(event)) {
+            const namespace = getStack.call(this, event),
+                phase = options.phase;
+
+            retVal =
+                (!phase || phase === EventHub.PHASES.CAPTURING ?
+                    triggerEventCapture.call(this, event, data, options, dispatcher) : 0)
+                +
+                triggerEvent(namespace, data, options, dispatcher)
+                +
+                (!phase || phase === EventHub.PHASES.BUBBLING ?
+                    triggerEventBubble.call(this, namespace, data, options, dispatcher) : 0);
 
             namespace.__stack.triggers++;                                             // count the trigger
-            namespace.__stack.one = [];                                                // cleanup
+            // namespace.__stack.one = [];                                                // cleanup
         }
 
         return retVal;                                                                 // return the number of triggered callback functions
+    }
+
+    canTrigger(event = '') {
+        return ((getStack.call(this, event) || {}).__stack || {}).disabled === false;
     }
 
     /**
@@ -240,7 +262,7 @@ export class EventHub {
      eventHub.on( 'ui.update', this.update.bind(this), {prepend: true, eventMode: EventHub.EVENT_MODE.CAPTURING} ) ;
      */
     on(eventName, callback, options) {
-        return !!addCallbackToStack.call(this, eventName, callback, options || {});
+        return addCallbackToStack.call(this, eventName, callback, options || {});
     }
 
 
@@ -257,15 +279,9 @@ export class EventHub {
      *          <tt>capture</tt> and <tt>bubble</tt>
      * @return {Boolean} TRUE if the callback is registered successfully. It will fail if the callback was already registered
      */
-    one(eventName, callback, options) {
-        const obj = addCallbackToStack.call(this, eventName, callback, options || {});
-
-        if (obj) // if obj exists, the callback was added.
-        {
-            obj.isOne = true;
-        }
-
-        return obj !== null;
+    one(event, callback, options) {
+        return addCallbackToStack.call(this, event, callback,
+            Object.assign({}, (options || {}), {isOne: true}));
     }
 
     /**
@@ -303,26 +319,19 @@ export class EventHub {
      * @method countCallbacks
      * @param {Sting} eventName the event name for which all registered callbacks are counted (including nested event names).
      * @param {Object} [options] configuration
-     *      @param {String} [options.eventMode] the event mode; EventHub.CAPTURING or EventHub.BUBBLE
+     *      @param {String} [options.phase] the event mode; EventHub.CAPTURING or EventHub.BUBBLE
      *      @param {Boolean} [options.traverse=false] traverse all nested namepsaces
      * @return {Number} the number of callback functions inside 'eventName'. Returns -1 if the event or namespace does not exists
      * TODO: etype is not used
      */
-    countCallbacks(eventName = '', options = {}) {
-        let retVal = 0;
-        if (options.eventMode === EventHub.EVENT_MODE.CAPTURING ||
-            options.eventMode === EventHub.EVENT_MODE.BOTH) {
-            retVal = triggerEventCapture.call(this, eventName, null, options, () => {})
+    countCallbacks(event, options) {
+        if (event && typeof event === 'object') {
+            options = event;
+            event = '';
         }
 
-        if (options.eventMode === EventHub.EVENT_MODE.BUBBLING ||
-            options.eventMode === EventHub.EVENT_MODE.BOTH) {
-            retVal += triggerEventBubble.call(this, getStack.call(this, eventName), null, options, () => {})
-        } else if (!options.eventMode) {
-            retVal = triggerEvent(getStack.call(this, eventName), null, options, () => {});
-        }
-
-        return retVal; // stackCounter.call(this, eventName, options, getCallbackCount);
+        return this.trigger(event, null, options, () => {
+        });
     }
 
     /**
@@ -341,19 +350,15 @@ export class EventHub {
 /* ******** PRIVATE HELPER FUNCTION *********** */
 
 function stackCounter(eventName, options, handler) {
-    if (!eventName)  // if event-name is not defined --> traverse
-    {
-        options.traverse = true;
-    }
-
     const stack = getStack.call(this, eventName);
-    return sumPropertyInNamespace(stack, handler, options || {});
+    return sumPropertyInNamespace(stack, handler, options);
 }
 
 function setDisableEvent(eventName, state, options) {
     const namespace = getStack.call(this, eventName);
 
-    changeStateEvent.call(this, namespace || {}, state, options || {});
+    changeStateEvent.call(this, namespace, state, options);
+
     return this;
 }
 
@@ -364,12 +369,14 @@ function setDisableEvent(eventName, state, options) {
  * @param {Boolean} state TRUE to disable the events
  */
 function changeStateEvent(namespace, state, options) {
-    for (let i in namespace) {
-        if (i === '__stack') {
-            namespace.__stack.disabled = state;
-        }
-        else if (options.traverse) {
-            changeStateEvent.call(this, namespace[i], state, options);
+    if (namespace) {
+        for (let i in namespace) {
+            if (i === '__stack') {
+                namespace.__stack.disabled = state;
+            }
+            else if (options.traverse) {
+                changeStateEvent.call(this, namespace[i], state, options);
+            }
         }
     }
 }
@@ -399,24 +406,44 @@ function getTriggerCount(stack) {
     return stack.triggers;
 }
 
-function addCallbackToStack(eventName, callback, options) {
+function addCallbackToStack(event, callback, options) {
     let obj = null
+        , canAdd = false
         , stack;
-    if (checkInput(eventName, callback))                                                  // validate input
+
+    if (checkInput(event, callback))                                                  // validate input
     {
-        stack = createStack.call(this, eventName);                                       // get stack of 'eventName'
-        if (canAddCallback.call(this, stack.__stack.on, callback, options) === true)      // check if the callback is not already added
+        stack = createStack.call(this, event);                                       // get stack of 'eventName'
+
+        if (options.phase === DEFAULTS.PHASES.BOTH)
+        {
+            canAdd = canAddCallback.call(this, stack.__stack.on, callback,
+                Object.assign({}, options, {phase: DEFAULTS.PHASES.CAPTURING})) &&
+            canAddCallback.call(this, stack.__stack.on, callback,
+                Object.assign({}, options, {phase: DEFAULTS.PHASES.BUBBLING}));
+        } else
+        {
+            canAdd = canAddCallback.call(this, stack.__stack.on, callback, options);
+        }
+
+        if (canAdd)
         {
             obj = {
                 fn: callback,
-                eventMode: options.eventMode,
-                isOne: false
+                phase: options.phase,
+                isOne: options.isOne
             };
-            stack.__stack.on[options.prepend ? 'unshift' : 'push'](obj);
+            stack.__stack.on[options.prepend ? 'push' : 'unshift'](obj);
+
+            if (options.phase === DEFAULTS.PHASES.BOTH) {
+                obj.phase = DEFAULTS.PHASES.CAPTURING;
+
+                stack.__stack.on[options.prepend ? 'push' : 'unshift'](Object.assign({}, obj, {phase: DEFAULTS.PHASES.BUBBLING}));
+            }
         }
     }
 
-    return obj;
+    return canAdd;
 }
 
 /*
@@ -424,13 +451,13 @@ function addCallbackToStack(eventName, callback, options) {
  */
 function canAddCallback(callbacks, callback, options) {
     let i, retVal = true
-        , eventMode = options.eventMode; //|| undefined ;
+        , phase = options.phase; //|| undefined ;
 
     if (this.allowMultiple === false) {
         for (i = 0; i < callbacks.length; i++) {
             if (callbacks[i].fn === callback && (
-                    (!callback.eventMode && !eventMode)         // Both not defined
-                    || callbacks[i].eventMode === eventMode)    // Identical
+                    (!callback.phase && !phase)         // Both not defined
+                    || callbacks[i].phase === phase)    // Identical
             ) {
                 retVal = false;
                 break;
@@ -453,8 +480,7 @@ function checkInput(eventName, callback) {
     {
         retVal = true;
     }
-    else
-    {
+    else {
         console.warn(`Cannot bind the callback function to the event name ( eventName=${eventName},  callback=${callback})`);
     }
 
@@ -494,7 +520,7 @@ function removeCallback(list, callback, options) {
         , retVal = 0;
 
     for (i = list.length - 1; i >= 0; i--) {
-        if ((list[i].fn === callback || !callback) && list[i].eventMode === options.eventMode &&
+        if ((list[i].fn === callback || !callback) && list[i].phase === options.phase &&
             (options.isOne === list[i].isOne || options.isOne === undefined || options.isOne === null)
         /*
          && ( options.isOne === undefined || options.isOne === null || options.isOne === list[i].isOne
@@ -514,14 +540,14 @@ function removeCallback(list, callback, options) {
  This private function returns the callback stack matched by 'eventName'. If the eventName does
  not exist 'null' is returned
  */
-function getStack(namespace) {
+function getStack(event) {
     let i
-        , parts = namespace ? namespace.split('.') : []   // parts of the event namespaces
+        , parts = event ? event.split('.') : []   // parts of the event namespaces
         , stack = this._rootStack;                  // root of the callback stack
 
     for (i = 0; i < parts.length; i++) {
         if (!stack[parts[i]]) {
-            return null;                               // it does not exist -> done
+            return 0;                               // it does not exist -> done
         }
         stack = stack[parts[i]];                       // traverse a level deeper into the stack
     }
@@ -561,21 +587,19 @@ function createStack(namespace) {
     return stack;
 }
 
-function triggerEventCapture(eventName, data, options, dispatcher) {
+function triggerEventCapture(event, data, options, dispatcher) {
     let i
         , namespace = this._rootStack
-        , parts = eventName.split('.') || []
-        , eventMode = DEFAULTS.EVENT_MODE.CAPTURING
+        , parts = event ? event.split('.') : []
+        , phase = DEFAULTS.EVENT_MODE.CAPTURING
         , retVal = 0; // callCallbacks(namespace, eventMode) ; -> because you cannot bind callbacks to the root
 
     if (parts.length > 1 &&
-        ( !options.eventMode ||
-            options.eventMode === DEFAULTS.EVENT_MODE.BOTH ||
-            options.eventMode === DEFAULTS.EVENT_MODE.CAPTURING )) {
+        ( !options.phase || options.phase === phase)) {
         for (i = 0; i < parts.length - 1; i++)           // loop through namespace (not the last part)
         {
             namespace = namespace[parts[i]];
-            retVal += callCallbacks(namespace, data, eventMode, dispatcher);
+            retVal += callCallbacks(namespace, data, phase, dispatcher);
         }
     }
 
@@ -584,15 +608,15 @@ function triggerEventCapture(eventName, data, options, dispatcher) {
 
 function triggerEventBubble(namespace, data, options, dispatcher) {
     //var namespace = namespaces.__stack.parent ;
-    let eventMode = DEFAULTS.EVENT_MODE.BUBBLING
+    let phase = DEFAULTS.PHASES.BUBBLING
         , retVal = 0;
 
-    if (!options.eventMode ||
-        options.eventMode === DEFAULTS.EVENT_MODE.BOTH ||
-        options.eventMode === DEFAULTS.EVENT_MODE.BUBBLING) {
-        while (namespace.__stack.parent) {
+    if (!options.phase ||
+        options.phase === DEFAULTS.PHASES.BOTH ||
+        options.phase === DEFAULTS.PHASES.BUBBLING) {
+        while (namespace && namespace.__stack.parent) {
             namespace = namespace.__stack.parent;
-            retVal += callCallbacks(namespace, data, eventMode, dispatcher);
+            retVal += callCallbacks(namespace, data, phase, dispatcher);
         }
     }
 
@@ -604,16 +628,11 @@ function triggerEventBubble(namespace, data, options, dispatcher) {
  * To traverse this namespace and trigger everything inside it, this function is called recursively (only if options.traverse === true).
  */
 function triggerEvent(stack, data, options, dispatcher) {
-    let retVal = 0;
+    let retVal = callCallbacks(stack, data, null, dispatcher);
 
-    if (!stack.disabled)                                          // if this node/event is disabled, don't traverse the namespace deeper
-    {
+    if (options.traverse) {                             // found a deeper nested namespace
         for (let ns in stack) {
-            if (ns === "__stack") {
-                retVal += callCallbacks(stack, data, null, dispatcher);
-            }
-            else if (options.traverse)                             // found a deeper nested namespace
-            {
+            if (stack.hasOwnProperty(ns) && ns !== '__stack' && stack[ns].__stack) {
                 retVal += triggerEvent(stack[ns], data, options, dispatcher); // nested namespaces. NOTE that the 'eventName' is omitted!!
             }
         }
@@ -630,24 +649,20 @@ function triggerEvent(stack, data, options, dispatcher) {
  @param {Anything} data
  @param {String} eventMode accepted values
  */
-function callCallbacks(namespace, data, eventMode, dispatcher) {
-    let i
+function callCallbacks(namespace, data, phase, dispatcher) {
+    let i = namespace.__stack.on.length
         , retVal = 0
         , callback;
 
-    if (!namespace.__stack.disabled) {
-        for (i = 0; i < namespace.__stack.on.length; i++)            // loop through all callbacks
+    while(callback = namespace.__stack.on[--i])
+    {
+        if ((!callback.phase && !phase) || callback.phase === phase)
         {
-            callback = namespace.__stack.on[i];
-            if ((!callback.eventMode && !eventMode) ||
-                callback.eventMode === eventMode ||
-                eventMode && callback.eventMode === DEFAULTS.EVENT_MODE.BOTH)  // trigger callbacks depending on their event-mode
-            {
-                retVal++;                                               // count this trigger
-                dispatcher ? dispatcher(callback, data, eventMode) : callback.fn(data);                                      // call the callback
-                if (callback.isOne) {
-                    namespace.__stack.on.splice(i--, 1);                // remove callback for index is i, and afterwards fix loop index with i--
-                }
+            retVal++;                                               // count this trigger
+            dispatcher ? dispatcher(callback, data, phase) : callback.fn(data);                                      // call the callback
+
+            if (callback.isOne) {
+                namespace.__stack.on.splice(i, 1);                // remove callback for index is i, and afterwards fix loop index with i--
             }
         }
     }

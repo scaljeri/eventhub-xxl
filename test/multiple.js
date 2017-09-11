@@ -24,25 +24,26 @@ describe('Multiple', () => {
         beforeEach(() => {
             eh.on('a', cbs.cb1);
             eh.on('a', cbs.cb1);
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BOTH});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BOTH});
             eh.on('a.b', cbs.cb1); // not used
         });
 
-        it('should have registered cb1 without an eventMode', () => {
+        it('should have registered cb1 without an phase', () => {
             eh.countCallbacks('a').should.equal(2);
         });
 
         it('should have registered cb1 with bubbling', () => {
-            eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.BUBBLING}).should.equal(4);
+            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BUBBLING}).should.equal(5);
         });
 
         it('should have registered cb1 with both event modes', () => {
-            eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(8);
+            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(9);
+            eh.countCallbacks('a.b').should.equal(9);
         });
     });
 
@@ -53,22 +54,23 @@ describe('Multiple', () => {
             eh = new EventHub({allowMultiple: false});
             isAdded.push(eh.on('a', cbs.cb1));
             isAdded.push(eh.on('a', cbs.cb1));
-            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING}));
-            isAdded.push(eh.one('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING}));
-            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING}));
-            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING}));
-            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH}));
-            isAdded.push(eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH}));
+            isAdded.push(eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING}));
+            isAdded.push(eh.one('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING}));
+            isAdded.push(eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING}));
+            isAdded.push(eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING}));
+            isAdded.push(eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BOTH}));
+            isAdded.push(eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BOTH}));
             isAdded.push(eh.on('a.b', cbs.cb1)); // not used
         });
 
         it('should have added only unique callbacks', () => {
-           isAdded.should.eql([true, false, true, false, true, false, true, false, true]);
+           isAdded.should.eql([true, false, true, false, true, false, false, false, true]);
         });
 
         it('should have registered cb1 only once for each event mode', () => {
             eh.countCallbacks('a').should.equal(1);
-            eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(4);
+            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
+            eh.countCallbacks('a.b').should.equal(3);
         });
     });
 
@@ -78,19 +80,20 @@ describe('Multiple', () => {
             eh.setAllowMultiple(false);
 
             eh.on('a', cbs.cb1);
-            eh.on('a', cbs.cb1);
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH});
-            eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BOTH});
+            eh.on('a', cbs.cb1);  // not added
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING});  // not added
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING});
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING});  // not added
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BOTH});  // not added
+            eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BOTH});  // not added
             eh.on('a.b', cbs.cb1); // not used
         });
 
         it('should have registered cb1 only once for each event mode', () => {
             eh.countCallbacks('a').should.equal(1);
-            eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.BOTH}).should.equal(4);
+            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
+            eh.countCallbacks('a.b').should.equal(3);
         });
     });
 });

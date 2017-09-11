@@ -15,11 +15,11 @@ describe('Disable/Enable', () => {
         eh = new EventHub();
         data = [];
 
-        eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
+        eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING});
         eh.on('a.b', cbs.cb2);
-        eh.on('a.b', cbs.cb3, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-        eh.on('a.b.c', cbs.cb4, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-        eh.on('a.b.c', cbs.cb4, {eventMode: EventHub.EVENT_MODE.BUBBLING});
+        eh.on('a.b', cbs.cb3, {phase: EventHub.PHASES.BUBBLING});
+        eh.on('a.b.c', cbs.cb4, {phase: EventHub.PHASES.BUBBLING});
+        eh.on('a.b.c', cbs.cb4, {phase: EventHub.PHASES.BUBBLING});
         eh.on('a.b.c.d', cbs.cb5);
 
         eh.disable('a.b');
@@ -41,7 +41,7 @@ describe('Disable/Enable', () => {
     });
 
     it('should skip namespace if traversed', () => {
-        eh.trigger('a.b.c.d').should.equal(4);
+        eh.trigger('a.b.c.d').should.equal(5);
     });
 
     describe('#enable', () => {
@@ -64,10 +64,10 @@ describe('Disable/Enable', () => {
         });
 
         it('should have disabled the namespace and it children', () => {
-            eh.isDisabled('a').should.be.false
-            eh.isDisabled('a.b').should.be.true
-            eh.isDisabled('a.b.c').should.be.true
-            eh.isDisabled('a.b.c.d').should.be.true
+            eh.isDisabled('a').should.be.false;
+            eh.isDisabled('a.b').should.be.true;
+            eh.isDisabled('a.b.c').should.be.true;
+            eh.isDisabled('a.b.c.d').should.be.true;
         });
 
         it('should skip if disabled namespace is triggered', () => {
@@ -83,14 +83,14 @@ describe('Disable/Enable', () => {
 
 
             it('should have disabled the namespace and it children', () => {
-                eh.isDisabled('a').should.be.false
-                eh.isDisabled('a.b').should.be.true
-                eh.isDisabled('a.b.c').should.be.false
-                eh.isDisabled('a.b.c.d').should.be.false
+                eh.isDisabled('a').should.be.false;
+                eh.isDisabled('a.b').should.be.true;
+                eh.isDisabled('a.b.c').should.be.false;
+                eh.isDisabled('a.b.c.d').should.be.false;
             });
 
             it('should skip namespace if traversed', () => {
-                eh.trigger('a.b.c.d').should.equal(4);
+                eh.trigger('a.b.c.d').should.equal(5);
             });
         });
     });

@@ -1,6 +1,6 @@
 import {EventHub} from './helpers';
 
-describe('Eventhub - #trigger', () => {
+describe('Traverse', () => {
     let eh,
         count,
         data,
@@ -27,6 +27,16 @@ describe('Eventhub - #trigger', () => {
         eh.on('a.b.c.d.e', cbs.cb3);                // 7
 
         count = eh.trigger('a.b', 1, {traverse: true});
+    });
+
+    it('should count callbacks without an eventName', () => {
+        eh.countCallbacks(null, {traverse: true}).should.equal(8);
+        eh.countCallbacks({traverse: true}).should.equal(8);
+    });
+
+    it('should count callbacks unil namespace is invalid', () => {
+        eh.countCallbacks('a.b.x', {traverse: true}).should.equal(0);
+        eh.countCallbacks('a.b.x', {traverse: true, phase: EventHub.PHASES.CAPTURING}).should.equal(0);
     });
 
     it('should count callbacks', () => {

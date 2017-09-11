@@ -29,6 +29,10 @@ describe('#countTrigger', () => {
         eh.trigger('a.b.c', 1, {traverse: true});
     });
 
+    it('should count triggers without a event name', () => {
+        eh.countTriggers().should.equal(0);
+    });
+
     it('should count without traverse', () => {
         eh.countTriggers('a').should.equal(0);
         eh.countTriggers('a.b').should.equal(1);

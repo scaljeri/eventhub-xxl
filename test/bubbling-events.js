@@ -1,6 +1,6 @@
 import {EventHub} from './helpers';
 
-describe('Eventhub - Bubbling mode', () => {
+describe('Bubbling phase', () => {
     let eh,
         count,
         data,
@@ -17,13 +17,13 @@ describe('Eventhub - Bubbling mode', () => {
         eh = new EventHub();
         data = [];
 
-        eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-        eh.on('a.b', cbs.cb2, {eventMode: EventHub.EVENT_MODE.BUBBLING});
-        eh.on('a.b.c', cbs.cb4, {eventMode: EventHub.EVENT_MODE.BUBBLING});
+        eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING});
+        eh.on('a.b', cbs.cb2, {phase: EventHub.PHASES.BUBBLING});
+        eh.on('a.b.c', cbs.cb4, {phase: EventHub.PHASES.BUBBLING});
         eh.on('a.b', cbs.cb5);
         eh.on('a.b.c', cbs.cb6);
-        eh.on('a.b', cbs.cb3, {eventMode: EventHub.EVENT_MODE.BUBBLING, prepend: true});
-        eh.on('a.b.c.d', cbs.cb3, {eventMode: EventHub.EVENT_MODE.BUBBLING});
+        eh.on('a.b', cbs.cb3, {phase: EventHub.PHASES.BUBBLING, prepend: true});
+        eh.on('a.b.c.d', cbs.cb3, {phase: EventHub.PHASES.BUBBLING});
         eh.on('a.b.c.d.e', cbs.cb3);
 
         count = eh.trigger('a.b.c', 1);
@@ -36,19 +36,24 @@ describe('Eventhub - Bubbling mode', () => {
         eh.countTriggers('a.b.c.d').should.equal(0);
     });
 
-    it('should count callbacks', () => {
-        eh.countCallbacks('a', {eventMode: EventHub.EVENT_MODE.BUBBLING}).should.equal(0);
-        eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.BUBBLING}).should.equal(1);
-        eh.countCallbacks('a.b.c', {eventMode: EventHub.EVENT_MODE.BUBBLING}).should.equal(3);
-        eh.countCallbacks('a.b.c.d', {eventMode: EventHub.EVENT_MODE.BUBBLING}).should.equal(4);
-        eh.countCallbacks('a.b.c.d.e', {eventMode: EventHub.EVENT_MODE.BUBBLING}).should.equal(5);
+    it('should count callbacks without an evena tname', () => {
+        eh.countCallbacks(null, {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
+        eh.countCallbacks({phase: EventHub.PHASES.BUBBLING}).should.equal(0);
     });
 
-    it('should count but not traverse', () => {
+    it('should count callbacks', () => {
+        eh.countCallbacks('a', {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
+        eh.countCallbacks('a.b', {phase: EventHub.PHASES.BUBBLING}).should.equal(2);
+        eh.countCallbacks('a.b.c', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
+        eh.countCallbacks('a.b.c.d', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
+        eh.countCallbacks('a.b.c.d.e', {phase: EventHub.PHASES.BUBBLING}).should.equal(6);
+    });
+
+    it('should count and traverse', () => {
         eh.countCallbacks('a.b', {
-            eventMode: EventHub.EVENT_MODE.BUBBLING,
+            phase: EventHub.PHASES.BUBBLING,
             traverse: true
-        }).should.equal(1);
+        }).should.equal(4);
     });
 
     it('should have triggered the correct amount of callbacks', () => {

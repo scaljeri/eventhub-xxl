@@ -28,7 +28,7 @@ With namespaces it is possible to trigger groups of callbacks
     eventHub.trigger('bar') ;        // --> triggers: myFunc1, myFunc2, myFunc3 and myFunc4
     eventHub.trigger('bar.bar1');    // --> triggers: myFunc3 and myFunc4
     
-### Event modes
+### Event phases
 
 The traversal of event namespaces can be split into three different types:
 
@@ -48,7 +48,7 @@ one after the other as follows
         |        Event CAPTURING          |     |        Event BUBBLING           |
         -----------------------------------     -----------------------------------
                      
-When an event is triggered, first the events propagates in CAPTURING mode and then in BUBBLING mode
+When an event is triggered, first the events propagates in CAPTURING phase and then in BUBBLING phase
                        
                                           | |  / \
                          -----------------| |--| |-----------------
@@ -60,9 +60,9 @@ When an event is triggered, first the events propagates in CAPTURING mode and th
                          ------------------------------------------
                       
     eventHub.on('bar.foo', myFunc1) ;
-    eventHub.on('bar', myFunc2, { eventMode: EventHub.EVENT_MODE.CAPTURING }) ;
-    eventHub.on('bar', myFunc3, { eventMode: EventHub.EVENT_MODE.BUBBLING }) ;
-    eventHub.on('bar', myFunc4, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
+    eventHub.on('bar', myFunc2, { phase: EventHub.PHASES.CAPTURING }) ;
+    eventHub.on('bar', myFunc3, { phase: EventHub.PHASES.BUBBLING }) ;
+    eventHub.on('bar', myFunc4, { phase: EventHub.PHASES.BOTH }) ;
     eventHub.on('bar.foo', myFuncXYZ, { eventMode: EventHub.EVENT_MODE.BOTH) ;
     eventHub.trigger('bar.foo') ; 
     
@@ -74,7 +74,7 @@ Callback execution order:
     myFunc3     // bubbling
     myFunc4     // bubbling
     
-Callbacks which belong to an event-mode can't be triggered directly, which is why `myFuncXYZ` was not executed
+Callbacks which belong to an phase can't be triggered directly, which is why `myFuncXYZ` was not executed
 
 ### Yarn tasks ###
 

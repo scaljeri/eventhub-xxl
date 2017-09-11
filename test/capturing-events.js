@@ -17,13 +17,13 @@ describe('Eventhub - Capturing mode', () => {
         eh = new EventHub();
         data = [];
 
-        eh.on('a', cbs.cb1, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-        eh.on('a.b', cbs.cb2, {eventMode: EventHub.EVENT_MODE.CAPTURING});
-        eh.on('a.b.c', cbs.cb4, {eventMode: EventHub.EVENT_MODE.CAPTURING});
+        eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING});
+        eh.on('a.b', cbs.cb2, {phase: EventHub.PHASES.CAPTURING});
+        eh.on('a.b.c', cbs.cb4, {phase: EventHub.PHASES.CAPTURING});
         eh.on('a.b', cbs.cb5);
         eh.on('a.b.c', cbs.cb6);
-        eh.on('a.b', cbs.cb3, {eventMode: EventHub.EVENT_MODE.CAPTURING, prepend: true});
-        eh.on('a.b.c.d', cbs.cb3, {eventMode: EventHub.EVENT_MODE.CAPTURING});
+        eh.on('a.b', cbs.cb3, {phase: EventHub.PHASES.CAPTURING, prepend: true});
+        eh.on('a.b.c.d', cbs.cb3, {phase: EventHub.PHASES.CAPTURING});
 
         count = eh.trigger('a.b.c', 1);
     });
@@ -35,19 +35,27 @@ describe('Eventhub - Capturing mode', () => {
         eh.countTriggers('a.b.c.d').should.equal(0);
     });
 
-    it('should count callbacks', () => {
-        eh.countCallbacks('a', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(0);
-        eh.countCallbacks('a.b', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(1);
-        eh.countCallbacks('a.b.c', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(3);
-        eh.countCallbacks('a.b.c.d', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(4);
-        eh.countCallbacks('a.b.c.d.e', {eventMode: EventHub.EVENT_MODE.CAPTURING}).should.equal(5);
+
+    it('should count callbacks without an event name', () => {
+        eh.countCallbacks({phase: EventHub.PHASES.CAPTURING}).should.equal(0);
     });
 
-    it('should count but not traverse', () => {
+    it('should count callbacks', () => {
+        eh.countCallbacks('a', {phase: EventHub.PHASES.CAPTURING}).should.equal(0);
+        eh.countCallbacks('a.b', {phase: EventHub.PHASES.CAPTURING}).should.equal(2);
+        eh.countCallbacks('a.b.c', {phase: EventHub.PHASES.CAPTURING}).should.equal(4);
+        eh.countCallbacks('a.b.c.d', {phase: EventHub.PHASES.CAPTURING}).should.equal(4);
+    });
+
+    it('should not trigger if event does not exist', () => {
+        eh.countCallbacks('a.b.c.d.e', {phase: EventHub.PHASES.CAPTURING}).should.equal(0);
+    });
+
+    it('should count and traverse', () => {
         eh.countCallbacks('a.b', {
-            eventMode: EventHub.EVENT_MODE.CAPTURING,
+            phase: EventHub.PHASES.CAPTURING,
             traverse: true
-        }).should.equal(1);
+        }).should.equal(3);
     });
 
     it('should have triggered the correct amount of callbacks', () => {
