@@ -8,36 +8,33 @@ Javascript Eventhub Library
 
 This is an Event Hub for event-based applications. It facilitates event-based communication between different 
 parts of an application (Event driven system). 
+
+To register a callback for an event run
+
+    const eh = new EventHub();
+    
+    eh.on('login', myFunc);
+    
+and to trigger do
+
+    eh.trigger('login', 'succes');
+    
+`succes` is the data passed given to `myFunc`. 
+
+But, event names can be namespaced
   
-Event names should have the form
-                                                
-    bar
-    bar.foo1  // --> namespaced event name
-    bar.foo2
-    bar.bar1.foo1
+    bar.foo.baz
     
-To register an event do
-                                                
-    eventHub.on('bar', myFunc1) ;
-    eventHub.on('bar.foo1', myFunc2) ;
-    eventHub.on('bar.bar1', myFunc3) ;
-    eventHub.on('bar.bar1.foo1', myFunc4) ;
+`bar.foo` is the namespace and `baz` the actual event name. Now you can still do
+
+    eh.on('bar.foo.baz', myFunc);
     
-With namespaces it is possible to trigger groups of callbacks
-                                                
-    eventHub.trigger('bar') ;        // --> triggers: myFunc1, myFunc2, myFunc3 and myFunc4
-    eventHub.trigger('bar.bar1');    // --> triggers: myFunc3 and myFunc4
+    eh.trigger('bar.foo.baz');
+    
+and it will also trigger `myFunc` but namespaces will give you some extra power which is described in the `Phases` section below
     
 ### Event phases
-
-The traversal of event namespaces can be split into three different types:
-
-    CAPTURING
-    BUBBLING
-    CAPTURING and BUBBLING => BOTH
-
-For example, if `bar.foo` is triggered, CAPTURING and BUBBLING do the opposite and are executed
-one after the other as follows
+If the namespaced event `bar.foo` is triggered, the namespace is traversed in a so called `CAPTURING` and `BUBBLING` phase
 
                        | |                                     / \
         ---------------| |-----------------     ---------------| |-----------------
@@ -48,7 +45,7 @@ one after the other as follows
         |        Event CAPTURING          |     |        Event BUBBLING           |
         -----------------------------------     -----------------------------------
                      
-When an event is triggered, first the events propagates in CAPTURING phase and then in BUBBLING phase
+First the events propagates in CAPTURING phase and then in BUBBLING phase
                        
                                           | |  / \
                          -----------------| |--| |-----------------
@@ -59,25 +56,62 @@ When an event is triggered, first the events propagates in CAPTURING phase and t
                          |               event model              |
                          ------------------------------------------
                       
-    eventHub.on('bar.foo', myFunc1) ;
-    eventHub.on('bar', myFunc2, { phase: EventHub.PHASES.CAPTURING }) ;
-    eventHub.on('bar', myFunc3, { phase: EventHub.PHASES.BUBBLING }) ;
-    eventHub.on('bar', myFunc4, { phase: EventHub.PHASES.BOTH }) ;
-    eventHub.on('bar.foo', myFuncXYZ, { phase: EventHub.EVENT_MODE.BOTH) ;
-    eventHub.trigger('bar.foo') ; 
+During these phases each callback targeted for that specific phase is executed.
+
+Example:
+
+    eventHub.on('bar', myFunc1);                                            
+    eventHub.on('bar.foo', myFunc2, {phase: EventHub.PHASES.CAPTURING}) ;  
+    eventHub.on('bar.foo', myFunc3, {phase: EventHub.PHASES.BUBBLING}) ;  
+    eventHub.on('bar.foo.baz', myFunc4, {phase: EventHub.EVENT_MODE.BOTH) ;  // added to both phases
+    eventHub.on('bar.foo.baz', myFunc5) ;                                    
     
-Callback execution order:
+    eventHub.trigger('bar.foo.baz') ; 
+  
+`bar.foo` is the namespace and the process will begin with the CAPTURING phase, meaning it will first execute
+`myFunc2`. Note that `myFunc1` is skipped, because it does not belong to a phase! The execution order is
 
     myFunc2     // capturing 
-    myFunc4     // capturing
-    myFunc1     // end-point
+    myFunc5     // end-point
     myFunc3     // bubbling
-    myFunc4     // bubbling
     
-Callbacks which belong to an phase can't be triggered directly, which is why `myFuncXYZ` was not executed
+`myFunc4` is not executed too, as it belongs to a phase and `baz` is the event  not the namespace!
 
 ### On and Off
-TODO
+As mentioned above, a callback can be registered using `on`
+
+    eh.on('bar.foo', myFunc);
+    eh.on('bar.foo', myFunc, {phase: EventHub.PHASES.CAPTURING);
+    eh.on('bar.foo', myFunc, {phase: EventHub.PHASES.BUBBLING);
+    eh.on('bar.foo', myFunc, {phase: EventHub.PHASES.BOTH);
+    
+`one` is identical, but the callback is removed after it has been executed
+
+### Disable / Enable
+Sometimes it might be useful to disable parts of the namespace. 
+
+    eh.disable('bar.foo');
+    eh.trigger('bar.foo.baz'); // Only triggers: myFunc5
+    
+To enable a namespace again do
+
+    eh.enable('bar.foo')
+    
+Note: You cannot trigger a disabled namespace directly
+
+### Multiple
+By default is is possible to register a callback multiple times for the same event. 
+This can be disabled by doing
+
+    eh.allowMultiple(false);
+
+### Fake it
+A `trigger`, an `off`, an `on` or `one` can be simulated, meaning no callbacks are actually triggered,
+added or removed
+
+    eh.fake.trigger('bar.foo.ba'); 
+    
+but it will return the amount of callbacks triggered.
 
 ### Yarn tasks ###
 

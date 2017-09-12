@@ -29,10 +29,10 @@ describe('Eventhub - Capturing mode', () => {
     });
 
     it('should count the trigger', () => {
-        eh.getTriggerFor('a').should.equal(0);
-        eh.getTriggerFor('a.b').should.equal(0);
-        eh.getTriggerFor('a.b.c').should.equal(1);
-        eh.getTriggerFor('a.b.c.d').should.equal(0);
+        eh.getTriggersFor('a').should.equal(0);
+        eh.getTriggersFor('a.b').should.equal(0);
+        eh.getTriggersFor('a.b.c').should.equal(1);
+        eh.getTriggersFor('a.b.c.d').should.equal(0);
     });
 
 

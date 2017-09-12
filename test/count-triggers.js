@@ -30,22 +30,22 @@ describe('#countTrigger', () => {
     });
 
     it('should count triggers without a event name', () => {
-        eh.getTriggerFor().should.equal(0);
+        eh.getTriggersFor().should.equal(0);
     });
 
     it('should count without traverse', () => {
-        eh.getTriggerFor('a').should.equal(0);
-        eh.getTriggerFor('a.b').should.equal(1);
-        eh.getTriggerFor('a.b.c').should.equal(1);
-        eh.getTriggerFor('a.b.c.d').should.equal(0);
-        eh.getTriggerFor('a.b.c.d.e').should.equal(0);
+        eh.getTriggersFor('a').should.equal(0);
+        eh.getTriggersFor('a.b').should.equal(1);
+        eh.getTriggersFor('a.b.c').should.equal(1);
+        eh.getTriggersFor('a.b.c.d').should.equal(0);
+        eh.getTriggersFor('a.b.c.d.e').should.equal(0);
     });
 
     it('should count and traverse', () => {
-        eh.getTriggerFor('a', {traverse: true}).should.equal(2);
-        eh.getTriggerFor('a.b', {traverse: true}).should.equal(2);
-        eh.getTriggerFor('a.b.c', {traverse: true}).should.equal(1);
-        eh.getTriggerFor('a.b.c.d', {traverse: true}).should.equal(0);
-        eh.getTriggerFor('a.b.c.d.e', {traverse: true}).should.equal(0);
+        eh.getTriggersFor('a', {traverse: true}).should.equal(2);
+        eh.getTriggersFor('a.b', {traverse: true}).should.equal(2);
+        eh.getTriggersFor('a.b.c', {traverse: true}).should.equal(1);
+        eh.getTriggersFor('a.b.c.d', {traverse: true}).should.equal(0);
+        eh.getTriggersFor('a.b.c.d.e', {traverse: true}).should.equal(0);
     });
 });

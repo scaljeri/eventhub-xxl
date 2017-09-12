@@ -121,21 +121,21 @@ export class EventHub {
      * count   = eh.fake.off('a.b', myFunc);
      * count   = eh.fake.trigger('a.b');
      *
-     * @returns {}
+     * @returns {{trigger: (function(*=, *=, *=)), on: (function(*=, *=, *=)), one: (function(*=, *=, *=)), off: (function(*=, *=, *=))}}
      */
     get fake() {
         return {
             trigger: (event, data, options) => {
                 return this.trigger(event, data, options || data, () => {});
             },
-            on: () => {
-                // TODO
+            on: (event, callback, options) => {
+                return this.on(event, callback, options, true);
             },
-            one: () => {
-
+            one: (event, callback, options) => {
+                return this.one(event, callback, options, true);
             },
-            off: () => {
-                // TODO
+            off: (event, callback, options) => {
+                return this.off(event, callback, options, true);
             }
         }
     }
@@ -277,8 +277,8 @@ export class EventHub {
      eventHub.on( 'ui.update', this.update.bind(this) ) ;
      eventHub.on( 'ui.update', this.update.bind(this), {prepend: true, eventMode: EventHub.EVENT_MODE.CAPTURING} ) ;
      */
-    on(eventName, callback, options) {
-        return addCallbackToStack.call(this, eventName, callback, options || {});
+    on(event, callback, options, isFake = false) {
+        return addCallbackToStack.call(this, event, callback, options || {}, isFake);
     }
 
 
@@ -295,9 +295,9 @@ export class EventHub {
      *          <tt>capture</tt> and <tt>bubble</tt>
      * @return {Boolean} TRUE if the callback is registered successfully. It will fail if the callback was already registered
      */
-    one(event, callback, options) {
+    one(event, callback, options, isFake) {
         return addCallbackToStack.call(this, event, callback,
-            Object.assign({}, (options || {}), {isOne: true}));
+            Object.assign({}, (options || {}), {isOne: true}), isFake);
     }
 
     /**
@@ -318,7 +318,7 @@ export class EventHub {
      eventHub.off('ui.update', this.update, {eventMode: EventHub.EVENT_MODE.CAPTURING}) ;
      eventHub.off('ui') ;
      */
-    off(event, callback, options) {
+    off(event, callback, options, isFake) {
         if (typeof callback !== 'function')                          // fix input
         {
             options = callback;
@@ -326,17 +326,18 @@ export class EventHub {
         }
 
         const stack = getStack.call(this, event);
-        return removeFromNamespace(stack, callback, options || {});
+        return removeFromNamespace(stack, callback, options || {}, isFake);
     }
 
     /**
-     * returns the the trigger count for this event
+     * returns the number of triggers for the event name given
+     *
      * @param {sting} event name of the nam
      * @param {Object} [options]
      * @param {Boolean} [options.traverse=false] traverse all nested namepsaces
      * @return {Number} trigger count. -1 is returned if the event name does not exist
      */
-    getTriggerFor(event, options = {}) {
+    getTriggersFor(event, options = {}) {
         return stackCounter.call(this, event, options, getTriggerCount);
     }
 }
@@ -400,7 +401,7 @@ function getTriggerCount(stack) {
     return stack.triggers;
 }
 
-function addCallbackToStack(event, callback, options) {
+function addCallbackToStack(event, callback, options, isFake) {
     let obj = null
         , canAdd = false
         , stack;
@@ -420,7 +421,7 @@ function addCallbackToStack(event, callback, options) {
             canAdd = canAddCallback.call(this, stack.__stack.on, callback, options);
         }
 
-        if (canAdd)
+        if (canAdd && !isFake)
         {
             obj = {
                 fn: callback,
@@ -486,7 +487,7 @@ function checkInput(eventName, callback) {
  can contain the callback too. Furthermore, the callback is optional, in which case the whole stack
  is erased.
  */
-function removeFromNamespace(namespaces, callback, options) {
+function removeFromNamespace(namespaces, callback, options, isFake) {
     let i, retVal = 0                                                // number of removed callbacks
         , namespace;
 
@@ -494,11 +495,11 @@ function removeFromNamespace(namespaces, callback, options) {
         if (namespaces.hasOwnProperty(i)) {
             namespace = namespaces[i];
             if (i === '__stack') {
-                retVal += removeCallback(namespace.on, callback, options);
+                retVal += removeCallback(namespace.on, callback, options, isFake);
             }
             else if (options.traverse)                           // NO, its a namesapace -> recursion
             {
-                retVal += removeFromNamespace.call(this, namespace, callback, options);
+                retVal += removeFromNamespace.call(this, namespace, callback, options, isFake);
             }
         }
     }
@@ -509,20 +510,18 @@ function removeFromNamespace(namespaces, callback, options) {
 /* This function should only be called on a stack with the 'on' and 'one' lists. It will remove one or
  multiple occurrences of the 'callback' function
  */
-function removeCallback(list, callback, options) {
+function removeCallback(list, callback, options, isFake) {
     let i                                             // position on the stack
         , retVal = 0;
 
     for (i = list.length - 1; i >= 0; i--) {
         if ((list[i].fn === callback || !callback) && list[i].phase === options.phase &&
             (options.isOne === list[i].isOne || options.isOne === undefined || options.isOne === null)
-        /*
-         && ( options.isOne === undefined || options.isOne === null || options.isOne === list[i].isOne
-         || (options.isOne === false && list[i].isOne === undefined)
-         )
-         */
         ) {
-            list.splice(i, 1);
+            if (!isFake) {
+                list.splice(i, 1);
+            }
+
             retVal++;
         }
     }
