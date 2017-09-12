@@ -15,11 +15,11 @@ To register a callback for an event run
     
     eh.on('login', myFunc);
     
-and to trigger do
+and to trigger
 
     eh.trigger('login', 'succes');
     
-`succes` is the data passed given to `myFunc`. 
+`succes` is the data given to `myFunc`. 
 
 But, event names can be namespaced
   
@@ -34,7 +34,7 @@ But, event names can be namespaced
 and it will also trigger `myFunc` but namespaces will give you some extra power which is described in the `Phases` section below
     
 ### Event phases
-If the namespaced event `bar.foo` is triggered, the namespace is traversed in a so called `CAPTURING` and `BUBBLING` phase
+If the event `bar.foo` is triggered, the namespace is traversed in a so called `CAPTURING` and `BUBBLING` phase
 
                        | |                                     / \
         ---------------| |-----------------     ---------------| |-----------------
@@ -68,14 +68,14 @@ Example:
     
     eventHub.trigger('bar.foo.baz') ; 
   
-`bar.foo` is the namespace and the process will begin with the CAPTURING phase, meaning it will first execute
+`bar.foo` is the namespace and the EventHub will begin with the CAPTURING phase, meaning it will first execute
 `myFunc2`. Note that `myFunc1` is skipped, because it does not belong to a phase! The execution order is
 
     myFunc2     // capturing 
     myFunc5     // end-point
     myFunc3     // bubbling
     
-`myFunc4` is not executed too, as it belongs to a phase and `baz` is the event  not the namespace!
+`myFunc4` is not executed too, as it belongs to a phase and in the context of this trigger `baz` is the event, not part of the namespace!
 
 ### On and Off
 As mentioned above, a callback can be registered using `on`
