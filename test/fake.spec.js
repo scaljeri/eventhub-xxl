@@ -1,6 +1,6 @@
 import {EventHub} from './helpers';
 
-describe.only('#Fake', () => {
+describe('#Fake', () => {
     let eh,
         data,
         cbs = {
