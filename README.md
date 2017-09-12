@@ -63,7 +63,7 @@ When an event is triggered, first the events propagates in CAPTURING phase and t
     eventHub.on('bar', myFunc2, { phase: EventHub.PHASES.CAPTURING }) ;
     eventHub.on('bar', myFunc3, { phase: EventHub.PHASES.BUBBLING }) ;
     eventHub.on('bar', myFunc4, { phase: EventHub.PHASES.BOTH }) ;
-    eventHub.on('bar.foo', myFuncXYZ, { eventMode: EventHub.EVENT_MODE.BOTH) ;
+    eventHub.on('bar.foo', myFuncXYZ, { phase: EventHub.EVENT_MODE.BOTH) ;
     eventHub.trigger('bar.foo') ; 
     
 Callback execution order:
@@ -75,6 +75,9 @@ Callback execution order:
     myFunc4     // bubbling
     
 Callbacks which belong to an phase can't be triggered directly, which is why `myFuncXYZ` was not executed
+
+### On and Off
+TODO
 
 ### Yarn tasks ###
 

@@ -34,16 +34,16 @@ describe('Multiple', () => {
         });
 
         it('should have registered cb1 without an phase', () => {
-            eh.countCallbacks('a').should.equal(2);
+            eh.fake.trigger('a').should.equal(2);
         });
 
         it('should have registered cb1 with bubbling', () => {
-            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BUBBLING}).should.equal(5);
+            eh.fake.trigger('a.b', {phase: EventHub.PHASES.BUBBLING}).should.equal(5);
         });
 
         it('should have registered cb1 with both event modes', () => {
-            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(9);
-            eh.countCallbacks('a.b').should.equal(9);
+            eh.fake.trigger('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(9);
+            eh.fake.trigger('a.b').should.equal(9);
         });
     });
 
@@ -68,9 +68,9 @@ describe('Multiple', () => {
         });
 
         it('should have registered cb1 only once for each event mode', () => {
-            eh.countCallbacks('a').should.equal(1);
-            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
-            eh.countCallbacks('a.b').should.equal(3);
+            eh.fake.trigger('a').should.equal(1);
+            eh.fake.trigger('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
+            eh.fake.trigger('a.b').should.equal(3);
         });
     });
 
@@ -91,9 +91,9 @@ describe('Multiple', () => {
         });
 
         it('should have registered cb1 only once for each event mode', () => {
-            eh.countCallbacks('a').should.equal(1);
-            eh.countCallbacks('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
-            eh.countCallbacks('a.b').should.equal(3);
+            eh.fake.trigger('a').should.equal(1);
+            eh.fake.trigger('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
+            eh.fake.trigger('a.b').should.equal(3);
         });
     });
 });

@@ -1,10 +1,9 @@
 const DEFAULTS = {
     /**
-     * The traversal of event namespaces can be split into three different types:
+     * The traversal of event namespaces can be split into two different phase :
      *
      *     CAPTURING
      *     BUBBLING
-     *     CAPTURING and BUBBLING => BOTH
      *
      * For example, if <tt>bar.foo</tt> is triggered, CAPTURING and BUBBLING do the opposite and are executed
      * one after the other as follows
@@ -18,7 +17,7 @@ const DEFAULTS = {
      *     |        Event CAPTURING          |     |        Event BUBBLING           |
      *     -----------------------------------     -----------------------------------
      *
-     * When an event is triggered, first the events propagates in CAPTURING mode and then in BUBBLING mode
+     * first the events propagates in the CAPTURING phase and then in BUBBLING phase
      *
      *
      *                                   | |  / \
@@ -33,7 +32,7 @@ const DEFAULTS = {
      *     eventHub.on('bar.foo', myFunc1) ;
      *     eventHub.on('bar', myFunc2, { eventMode: EventHub.EVENT_MODE.CAPTURING }) ;
      *     eventHub.on('bar', myFunc3, { eventMode: EventHub.EVENT_MODE.BUBBLING }) ;
-     *     eventHub.on('bar', myFunc4, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
+     *     eventHub.on('bar', myFunc4, { eventMode: EventHub.EVENT_MODE.BOTH }) ;     // myFunc4 is added to both phases
      *     eventHub.trigger('bar.foo') ;
      *
      * Callback execution order:
@@ -48,26 +47,21 @@ const DEFAULTS = {
      * @static
      */
     PHASES: {
-        CAPTURING: 'capture'           // event goes from root to target
-        , BUBBLING: 'bubble'            // event goes from target to root
-        , BOTH: 'both'
-    },
-    EVENT_MODE: {
         /**
-         * Defines the capturing event mode
-         * @property {String} EVENT_MODE.CAPTURING
+         * Defines the capturing event phase
+         * @property {String} PHASES.CAPTURING
          * @static
          */
         CAPTURING: 'capture'           // event goes from root to target
         /**
-         * Defines the bubbling event mode
-         * @property {String} EVENT_MODE.BUBBLING
+         * Defines the bubbling event phase
+         * @property {String} PHASES.BUBBLING
          * @static
          */
         , BUBBLING: 'bubble'            // event goes from target to root
         /**
-         * Represent both capturing and bubbling event modes
-         * @property {String} EVENT_MODE.BOTH
+         * Represent both capturing and bubbling event phase
+         * @property {String} PHASES.BOTH
          * @static
          */
         , BOTH: 'both'
@@ -80,32 +74,26 @@ const DEFAULTS = {
 
 /**
  * EventHub-XXL facilitates event-based communication between different parts of an application (Event driven system).
- * Events can be namespaced enabling the execution of triggering groups of callbacks.
+ * Events can be namespaced, enabling the execution of groups of callbacks.
+ * Namespaces are separated by a dot, like: `bar.foo1`, `bar.foo2`, `bar.bar1.foo1`.
  *
- * Namespaces are separated by a dot, like
- *
- *     bar.foo1
- *     bar.foo2
- *     bar.bar1.foo1
- *
- * The event name is always the last part (from the last dot to the end) of the given string. Everyghing else is part of the Namespace
- *
- *     eventHub.on('bar', myFunc1) ;             // event name: 'bar'
- *     eventHub.on('bar.foo1', myFunc2) ;        // event name: 'foo1', namespace: 'bar'
- *     eventHub.on('bar.bar1', myFunc3) ;
- *     eventHub.on('bar.bar1.foo1', myFunc4) ;   // event name: 'foo1', namespace: 'bar.bar1'
- *
- * The advantage of namespaced events is that groups of callbacks can be triggered at once
- *
- *     eventHub.trigger('bar') ;        // --> triggers: myFunc1, myFunc2, myFunc3 and myFunc4
- *     eventHub.trigger('bar.bar1');    // --> triggers: myFunc3 and myFunc4
- *
- * @class EventHub
- * @constructor
- * @param {Object} [options] configuration parameters
- *      @param {Boolean} [options.allowMultiple=TRUE] accept multiple registrations of the same function for the same event
+ * Although there is not much difference between an event-namespace and the event-name (last part),
+ * but the namespace will be travered by the event phases described above.
  */
 export class EventHub {
+    /**
+     * @readonly
+     * @enum {string}
+     * @property {string} BUBBLING Event goes from child to parent
+     * @property {string} CAPTURING Event goes from parent to child
+     */
+    static PHASES = DEFAULTS.PHASES;
+
+    /**
+    * @constructor
+    * @param {object} [options] configuration parameters
+    * @param {boolean} [options.allowMultiple=TRUE] accept multiple registrations of the same function for the same event
+    */
     constructor(options = {}) {
         Object.defineProperty(this, '_rootStack',
             {
@@ -122,25 +110,50 @@ export class EventHub {
         this.allowMultiple = typeof options.allowMultiple === 'boolean' ? options.allowMultiple : DEFAULTS.ALLOW_MULTIPLE;
     }
 
-    static EVENT_MODE = DEFAULTS.EVENT_MODE;              // set static properties
-    static PHASES = DEFAULTS.PHASES;              // set static properties
+    /**
+     * Simulates `trigger`, `on`, `one` and `off`, meaning no callbacks are actually triggered,
+     * added or removed.
+     *
+     * @example
+     *
+     * isAdded = eh.fake.on('a.b', myFunc);
+     * isAdded = eh.fake.one('a.b', myFunc);
+     * count   = eh.fake.off('a.b', myFunc);
+     * count   = eh.fake.trigger('a.b');
+     *
+     * @returns {}
+     */
+    get fake() {
+        return {
+            trigger: (event, data, options) => {
+                return this.trigger(event, data, options || data, () => {});
+            },
+            on: () => {
+                // TODO
+            },
+            one: () => {
+
+            },
+            off: () => {
+                // TODO
+            }
+        }
+    }
 
     /**
      * Generates an unique event name
      *
-     * @method generateUniqueEventName
-     * @return {String} unique event name
+     * @return {string} unique event name
      */
     generateUniqueEventName() {
         return '--eh--' + this._eventNameIndex++;      // first event-name will be: --eh--0
     }
 
     /**
-     * If set to true, one function can be registered multiple times for the same event
+     * By default it is allowed to add a function multiple times to the same event. Set to `false` to disabled this behaviour
      *
-     * @method setAllowMultiple
      * @chainable
-     * @param {Boolean} state accept multiple registrations
+     * @param {boolean} state accept multiple registrations
      */
     setAllowMultiple(state) {
         this.allowMultiple = state;
@@ -148,36 +161,39 @@ export class EventHub {
     }
 
     /**
-     * Enable an event name. See {{#crossLink "EventHub/disable:method"}}{{/crossLink}}
-     * @method enable
+     * Enables a disabled event. See {@link EventHub#disable}
+     *
      * @chainable
-     * @param {String} eventName name of the event
-     * @param {Object} [options] configuration
-     *  @param {Boolean} [options.traverse=false] disable nested events as wel if set to TRUE
+     * @param {string} eventName name of the event
+     * @param {object} [options] configuration
+     * @param {boolean} [options.traverse=false] disable nested events
      */
     enable(eventName, options = {}) {
         return setDisableEvent.call(this, eventName, false, options);
     }
 
     /**
-     * Disable an event. All triggers on a disabled event are ignored and no event propagation takes place. For example
+     * Disable an event, meaning all triggers are ignored
      *
-     *     eventHub.on('bar', callback1, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
-     *     eventHub.on('bar', callback2) ;
-     *     eventHub.on('bar.foo', callback3, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
-     *     eventHub.on('bar.foo', callback4) ;
-     *     eventHub.on('bar.foo.do', callback5 { eventMode: EventHub.EVENT_MODE.BOTH }) ;
-     *     eventHub.on('bar.foo.do', callback6) ;
-     *     eventHub.disable('bar') ;
+     * @example
      *
-     *     eventHub.trigger('bar')          // -> no callbacks called
-     *     eventHub.trigger('bar.foo')      // -> callback execution order: callback2, callback3, callback2
+     * eventHub.on('bar', callback1, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
+     * eventHub.on('bar', callback2) ;
+     * eventHub.on('bar.foo', callback3, { eventMode: EventHub.EVENT_MODE.BOTH }) ;
+     * eventHub.on('bar.foo', callback4) ;
+     * eventHub.on('bar.foo.do', callback5 { eventMode: EventHub.EVENT_MODE.BOTH }) ;
+     * eventHub.on('bar.foo.do', callback6) ;
      *
-     * @method disable
+     * eventHub.disable('bar') ;
+     *
+     * eventHub.trigger('bar')          // -> no callbacks called
+     * eventHub.trigger('bar.foo')      // -> only callback4 is called
+     * eventHub.trigger('bar.foo.do')   // -> callback execution order: callback3, callback6, callback3
+     *
      * @chainable
      * @param {String} eventNname name of the event
-     * @param {Object} [options] configuration
-     *  @param {Boolean} [options.traverse=false] disable nested events as wel if set to TRUE
+     * @param {object} [options] configuration
+     * @param {boolean} [options.traverse=false] disable nested events
      */
     disable(eventName, options = {}) {
         return setDisableEvent.call(this, eventName, true, options);
@@ -302,48 +318,26 @@ export class EventHub {
      eventHub.off('ui.update', this.update, {eventMode: EventHub.EVENT_MODE.CAPTURING}) ;
      eventHub.off('ui') ;
      */
-    off(eventName, callback, options) {
+    off(event, callback, options) {
         if (typeof callback !== 'function')                          // fix input
         {
             options = callback;
             callback = null;
         }
 
-        const stack = getStack.call(this, eventName);
+        const stack = getStack.call(this, event);
         return removeFromNamespace(stack, callback, options || {});
     }
 
     /**
-     * count the registered callbacks for an event or namespace
-     *
-     * @method countCallbacks
-     * @param {Sting} eventName the event name for which all registered callbacks are counted (including nested event names).
-     * @param {Object} [options] configuration
-     *      @param {String} [options.phase] the event mode; EventHub.CAPTURING or EventHub.BUBBLE
-     *      @param {Boolean} [options.traverse=false] traverse all nested namepsaces
-     * @return {Number} the number of callback functions inside 'eventName'. Returns -1 if the event or namespace does not exists
-     * TODO: etype is not used
-     */
-    countCallbacks(event, options) {
-        if (event && typeof event === 'object') {
-            options = event;
-            event = '';
-        }
-
-        return this.trigger(event, null, options, () => {
-        });
-    }
-
-    /**
      * returns the the trigger count for this event
-     * @method countTrigger
-     * @param {sting} [eventName] the event name
+     * @param {sting} event name of the nam
      * @param {Object} [options]
-     *      @param {Boolean} [options.traverse=false] traverse all nested namepsaces
+     * @param {Boolean} [options.traverse=false] traverse all nested namepsaces
      * @return {Number} trigger count. -1 is returned if the event name does not exist
      */
-    countTriggers(eventName, options = {}) {
-        return stackCounter.call(this, eventName, options, getTriggerCount);
+    getTriggerFor(event, options = {}) {
+        return stackCounter.call(this, event, options, getTriggerCount);
     }
 }
 
@@ -591,7 +585,7 @@ function triggerEventCapture(event, data, options, dispatcher) {
     let i
         , namespace = this._rootStack
         , parts = event ? event.split('.') : []
-        , phase = DEFAULTS.EVENT_MODE.CAPTURING
+        , phase = DEFAULTS.PHASES.CAPTURING
         , retVal = 0; // callCallbacks(namespace, eventMode) ; -> because you cannot bind callbacks to the root
 
     if (parts.length > 1 &&

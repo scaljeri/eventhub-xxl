@@ -39,18 +39,18 @@ describe('#trigger', () => {
     });
 
     it('should count the trigger', () => {
-        eh.countTriggers('a').should.equal(0);
-        eh.countTriggers('a.b').should.equal(0);
-        eh.countTriggers('a.b.c').should.equal(1);
-        eh.countTriggers('a.b.c.d').should.equal(0);
+        eh.getTriggerFor('a').should.equal(0);
+        eh.getTriggerFor('a.b').should.equal(0);
+        eh.getTriggerFor('a.b.c').should.equal(1);
+        eh.getTriggerFor('a.b.c.d').should.equal(0);
     });
 
     it('should count callbacks', () => {
-        eh.countCallbacks('a').should.equal(1);
-        eh.countCallbacks('a.b').should.equal(2);
-        eh.countCallbacks('a.b.c').should.equal(3);
-        eh.countCallbacks('a.b.c.d').should.equal(1);
-        eh.countCallbacks('a.b.c.d.e').should.equal(1);
+        eh.fake.trigger('a').should.equal(1);
+        eh.fake.trigger('a.b').should.equal(2);
+        eh.fake.trigger('a.b.c').should.equal(3);
+        eh.fake.trigger('a.b.c.d').should.equal(1);
+        eh.fake.trigger('a.b.c.d.e').should.equal(1);
     });
 
     it('should have triggered the correct amount of callbacks', () => {

@@ -30,21 +30,21 @@ describe('Traverse', () => {
     });
 
     it('should count callbacks without an eventName', () => {
-        eh.countCallbacks(null, {traverse: true}).should.equal(8);
-        eh.countCallbacks({traverse: true}).should.equal(8);
+        eh.fake.trigger(null, {traverse: true}).should.equal(8);
+        eh.fake.trigger('', {traverse: true}).should.equal(8);
     });
 
     it('should count callbacks unil namespace is invalid', () => {
-        eh.countCallbacks('a.b.x', {traverse: true}).should.equal(0);
-        eh.countCallbacks('a.b.x', {traverse: true, phase: EventHub.PHASES.CAPTURING}).should.equal(0);
+        eh.fake.trigger('a.b.x', {traverse: true}).should.equal(0);
+        eh.fake.trigger('a.b.x', {traverse: true, phase: EventHub.PHASES.CAPTURING}).should.equal(0);
     });
 
     it('should count callbacks', () => {
-        eh.countCallbacks('a', {traverse: true}).should.equal(8);
-        eh.countCallbacks('a.b', {traverse: true}).should.equal(7);
-        eh.countCallbacks('a.b.c', {traverse: true}).should.equal(5);
-        eh.countCallbacks('a.b.c.d', {traverse: true}).should.equal(2);
-        eh.countCallbacks('a.b.c.d.e', {traverse: true}).should.equal(1);
+        eh.fake.trigger('a', {traverse: true}).should.equal(8);
+        eh.fake.trigger('a.b', {traverse: true}).should.equal(7);
+        eh.fake.trigger('a.b.c', {traverse: true}).should.equal(5);
+        eh.fake.trigger('a.b.c.d', {traverse: true}).should.equal(2);
+        eh.fake.trigger('a.b.c.d.e', {traverse: true}).should.equal(1);
     });
 
     it('should have triggered the correct amount of callbacks', () => {

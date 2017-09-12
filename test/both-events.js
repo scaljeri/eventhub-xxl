@@ -24,28 +24,28 @@ describe('Phase: Both', () => {
         eh.on('a.b.c', cbs.cb6);
         eh.on('a.b', cbs.cb3, {phase: EventHub.PHASES.BOTH, prepend: true});
         eh.on('a.b.c.d', cbs.cb3, {phase: EventHub.PHASES.BOTH});
-        eh.on('a.b.c.d.e', cbs.cb3);
+        eh.on('a.b.c.d.e', cbs.cb3);                                    
 
         count = eh.trigger('a.b.c', 1);
     });
 
     it('should count the trigger', () => {
-        eh.countTriggers('a').should.equal(0);
-        eh.countTriggers('a.b').should.equal(0);
-        eh.countTriggers('a.b.c').should.equal(1);
-        eh.countTriggers('a.b.c.d').should.equal(0);
+        eh.getTriggerFor('a').should.equal(0);
+        eh.getTriggerFor('a.b').should.equal(0);
+        eh.getTriggerFor('a.b.c').should.equal(1);
+        eh.getTriggerFor('a.b.c.d').should.equal(0);
     });
 
     it('should count callbacks', () => {
-        eh.countCallbacks('a', {phase: EventHub.PHASES.BOTH}).should.equal(0);
-        eh.countCallbacks('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
-        eh.countCallbacks('a.b.c', {phase: EventHub.PHASES.BOTH}).should.equal(7);
-        eh.countCallbacks('a.b.c.d', {phase: EventHub.PHASES.BOTH}).should.equal(8);
-        eh.countCallbacks('a.b.c.d.e', {phase: EventHub.PHASES.BOTH}).should.equal(11);
+        eh.fake.trigger('a', {phase: EventHub.PHASES.BOTH}).should.equal(0);
+        eh.fake.trigger('a.b', {phase: EventHub.PHASES.BOTH}).should.equal(3);
+        eh.fake.trigger('a.b.c', {phase: EventHub.PHASES.BOTH}).should.equal(7);
+        eh.fake.trigger('a.b.c.d', {phase: EventHub.PHASES.BOTH}).should.equal(8);
+        eh.fake.trigger('a.b.c.d.e', {phase: EventHub.PHASES.BOTH}).should.equal(11);
     });
 
     it('should count and traverse', () => {
-        eh.countCallbacks('a.b', {
+        eh.fake.trigger('a.b', null, {
             phase: EventHub.PHASES.BOTH,
             traverse: true
         }).should.equal(5);

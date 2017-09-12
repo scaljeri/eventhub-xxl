@@ -30,27 +30,27 @@ describe('Bubbling phase', () => {
     });
 
     it('should count the trigger', () => {
-        eh.countTriggers('a').should.equal(0);
-        eh.countTriggers('a.b').should.equal(0);
-        eh.countTriggers('a.b.c').should.equal(1);
-        eh.countTriggers('a.b.c.d').should.equal(0);
+        eh.getTriggerFor('a').should.equal(0);
+        eh.getTriggerFor('a.b').should.equal(0);
+        eh.getTriggerFor('a.b.c').should.equal(1);
+        eh.getTriggerFor('a.b.c.d').should.equal(0);
     });
 
     it('should count callbacks without an evena tname', () => {
-        eh.countCallbacks(null, {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
-        eh.countCallbacks({phase: EventHub.PHASES.BUBBLING}).should.equal(0);
+        eh.fake.trigger(null, {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
+        eh.fake.trigger('', {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
     });
 
     it('should count callbacks', () => {
-        eh.countCallbacks('a', {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
-        eh.countCallbacks('a.b', {phase: EventHub.PHASES.BUBBLING}).should.equal(2);
-        eh.countCallbacks('a.b.c', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
-        eh.countCallbacks('a.b.c.d', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
-        eh.countCallbacks('a.b.c.d.e', {phase: EventHub.PHASES.BUBBLING}).should.equal(6);
+        eh.fake.trigger('a', {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
+        eh.fake.trigger('a.b', {phase: EventHub.PHASES.BUBBLING}).should.equal(2);
+        eh.fake.trigger('a.b.c', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
+        eh.fake.trigger('a.b.c.d', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
+        eh.fake.trigger('a.b.c.d.e', {phase: EventHub.PHASES.BUBBLING}).should.equal(6);
     });
 
     it('should count and traverse', () => {
-        eh.countCallbacks('a.b', {
+        eh.fake.trigger('a.b', {
             phase: EventHub.PHASES.BUBBLING,
             traverse: true
         }).should.equal(4);
