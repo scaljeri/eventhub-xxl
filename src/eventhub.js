@@ -242,10 +242,10 @@ export class EventHub {
      * @return {Number} the count of triggered callbacks
      *
      * @example
-     * eventHub.trigger('ui.update' ) ;                                      // trigger the 'update' event inside the 'ui' namespace
-     * eventHub.trigger('ui', null, {traverse: true} ) ;                     // trigger all nested events and namespaces inside the 'ui' namespace
-     * eventHub.trigger('ui.update', {authenticated: true} ) ;               // trigger the 'update' event inside the 'ui' namespace
-     * eventHub.trigger('ui', {authenticated: true}, {traverse: true} ) ;    // trigger all nested events and namespaces inside the 'ui' namespace
+     * eventHub.trigger('ui.update' ) ;                       // trigger the 'update' event inside the 'ui' namespace
+     * eventHub.trigger('ui', null, {traverse: true} ) ;      // trigger all nested events and namespaces inside the 'ui' namespace
+     * eventHub.trigger('ui.update',) ;                       // trigger the 'update' event inside the 'ui' namespace
+     * eventHub.trigger('ui', {traverse: true} ) ;            // trigger the 'update' event and all nested events
      */
     trigger(event, data, options, dispatcher) {
         let retVal = 0 ;
