@@ -25,7 +25,7 @@ describe('Eventhub - Capturing mode', () => {
         eh.on('a.b', cbs.cb3, {phase: EventHub.PHASES.CAPTURING, prepend: true});
         eh.on('a.b.c.d', cbs.cb3, {phase: EventHub.PHASES.CAPTURING});
 
-        count = eh.trigger('a.b.c', 1);
+        count = eh.trigger('a.b.c', 1, {phase: EventHub.PHASES.CAPTURING});
     });
 
     it('should count the trigger', () => {

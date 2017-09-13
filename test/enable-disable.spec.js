@@ -29,6 +29,11 @@ describe('Disable/Enable', () => {
        eh.isDisabled('x.y.z').should.be.false;
     });
 
+    it('should not be possible to enable a non-existing event', () => {
+        eh.enable('x.y.z');
+        eh.canTrigger('x.y.z').should.be.false;
+    });
+
     it('should have a disabled namespace', () => {
        eh.isDisabled('a').should.be.false
        eh.isDisabled('a.b').should.be.true

@@ -169,8 +169,28 @@ export class EventHub {
      * @param {object} [options] configuration
      * @param {boolean} [options.traverse=false] enable nested events if set to true
      */
-    enable(event, options = {}) {
-        return setDisableEvent.call(this, event, false, options) ;
+    enable(event, options = {}, defaultState = false) {
+        let namespace = event;
+
+        if (typeof namespace === 'string') {
+            namespace = getStack.call(this, event);
+        }
+
+        if (namespace) {
+            for (let i in namespace)
+            {
+                if (i === '__stack')
+                {
+                    namespace.__stack.disabled = defaultState ;
+                }
+                else if (options.traverse)
+                {
+                    this.enable(namespace[i], options, defaultState) ;
+                }
+            }
+        }
+
+        return this;
     }
 
     /**
@@ -197,7 +217,7 @@ export class EventHub {
      * @param {boolean} [options.traverse=false] disable nested events
      */
     disable(event, options = {}) {
-        return setDisableEvent.call(this, event, true, options) ;
+        return this.enable(event, options, true);
     }
 
     /**
@@ -245,13 +265,11 @@ export class EventHub {
                 phase = options.phase ;
 
             retVal =
-                (!phase || phase === EventHub.PHASES.CAPTURING ?
-                    triggerEventCapture.call(this, event, data, options, dispatcher) : 0)
+                triggerEventCapture.call(this, event, data, options, dispatcher)
                 +
                 triggerEvent(namespace, data, options, dispatcher)
                 +
-                (!phase || phase === EventHub.PHASES.BUBBLING ?
-                    triggerEventBubble.call(this, namespace, data, options, dispatcher) : 0) ;
+                triggerEventBubble.call(this, namespace, data, options, dispatcher);
 
             namespace.__stack.triggers++ ;                                             // count the trigger
             // namespace.__stack.one = [] ;                                                // cleanup
@@ -261,7 +279,7 @@ export class EventHub {
     }
 
     /**
-     * For an event to be triggerable, it should be enabled and exis.
+     * For an event to be triggerable, it should be enabled and exits.
      *
      * @param event
      * @returns {boolean}
@@ -348,65 +366,24 @@ export class EventHub {
      * @param {boolean} [options.traverse=false] traverse all nested events
      * @return {Number} the amount of trigger for the given event name
      */
-    getTriggersFor(event, options = {}) {
-        const stack = getStack.call(this, event) ;
-        return sumPropertyInNamespace(stack, (stack) => stack.triggers, options) ;
+    getTriggersFor(event, options = {}, namespace = getStack.call(this, event)) {
+        let retVal = namespace.__stack.triggers;
+
+        if (options.traverse) {
+            for (let i in namespace)
+            {
+                if (i !== '__stack')
+                {
+                    retVal += this.getTriggersFor(event, options, namespace[i]) ;
+                }
+            }
+        }
+
+        return retVal;
     }
 }
 
 /* ******** PRIVATE HELPER FUNCTION *********** */
-
-function setDisableEvent(eventName, state, options) {
-    const namespace = getStack.call(this, eventName) ;
-
-    changeStateEvent.call(this, namespace, state, options) ;
-
-    return this ;
-}
-
-/*
- * Change the state of an event (disabled=false/enabled=true)
- *
- * @param {object} namespace
- * @param {boolean} state to be applied to the namespace
- */
-function changeStateEvent(namespace, state, options) {
-    if (namespace) {
-        for (let i in namespace)
-        {
-            if (i === '__stack')
-            {
-                namespace.__stack.disabled = state ;
-            }
-            else if (options.traverse)
-            {
-                changeStateEvent.call(this, namespace[i], state, options) ;
-            }
-        }
-    }
-}
-
-/*
- `propertyFunc` returns a number for a given namespace. This number is added for each nested namespace
- and returned.
- */
-function sumPropertyInNamespace(namespace, propertyFunc, options) {
-    let i, retVal = 0 ;
-
-    for (i in namespace)
-    {
-        if (i === '__stack')
-        {
-            retVal += propertyFunc(namespace.__stack, options) ;
-        }
-        else if (options.traverse === true)
-        {
-            retVal += sumPropertyInNamespace(namespace[i], propertyFunc, options) ;
-        }
-    }
-
-    return retVal ;
-}
 
 function addCallbackToStack(event, callback, options, isFake) {
     let obj = null
@@ -597,7 +574,7 @@ function triggerEventCapture(event, data, options, dispatcher) {
         , phase = DEFAULTS.PHASES.CAPTURING
         , retVal = 0 ;
 
-    if (parts.length > 1 && ( !options.phase || options.phase === phase))
+    if (parts.length > 1 && (!options.phase || options.phase === phase))
     {
         for (i = 0 ; i < parts.length - 1 ; i++)           // loop through namespace (not the last part)
         {
@@ -613,9 +590,7 @@ function triggerEventBubble(namespace, data, options, dispatcher) {
     let phase = DEFAULTS.PHASES.BUBBLING
         , retVal = 0 ;
 
-    if (!options.phase ||
-        options.phase === DEFAULTS.PHASES.BOTH ||
-        options.phase === DEFAULTS.PHASES.BUBBLING)
+    if (!options.phase || options.phase === phase)
     {
         while (namespace && namespace.__stack.parent)
         {

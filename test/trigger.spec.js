@@ -75,7 +75,7 @@ describe('#trigger', () => {
         });
 
         it('should trigger nothing', () => {
-            eh.trigger(null, 1).should.equal(0);
+            eh.trigger(undefined, 1).should.equal(0);
             data.length.should.equal(0);
         });
 
