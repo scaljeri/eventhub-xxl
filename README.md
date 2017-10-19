@@ -121,9 +121,9 @@ Install the dependencies as follows
 
     $> yarn install 
 
-To minify the library
+To build and minify
 
-    $> gulp
+    $> yarn build
     
 To run the tests
 
@@ -132,6 +132,14 @@ To run the tests
 ### Installation ###
 
     $> yarn add eventhub-xxl
+    
+and import it into your project as follows
+
+    import { EventHub } from 'eventhub-xxl';
+    
+or with ES5
+
+    var EventHub = require('eventhub-xxl');
 
 [travis-url]: https://travis-ci.org/scaljeri/eventhub-xxl.png
 [travis-image]: https://travis-ci.org/scaljeri/eventhub-xxl
