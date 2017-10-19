@@ -11,6 +11,8 @@ parts of an application (Event driven system).
 
 To register a callback for an event run
 
+    import {EventHub} from 'eventhub-xxl';
+    
     const eh = new EventHub();
     
     eh.on('login', myFunc);

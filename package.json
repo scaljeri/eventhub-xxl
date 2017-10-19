@@ -1,13 +1,13 @@
 {
   "name": "eventhub-xxl",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Event Hub for event-based applications",
-  "main": "./src/eventhub.js",
+  "main": "./dist/eventhub.min.js",
   "scripts": {
     "build": "mkdir -p dist && ./node_modules/.bin/babel ./src/eventhub.js --out-file dist/eventhub.js && ./node_modules/.bin/uglifyjs dist/eventhub.js -o dist/eventhub.min.js",
     "lint": "./node_modules/.bin/eslint -c .eslintrc ./src/eventhub.js",
     "doc": "./node_modules/.bin/jsdoc src/eventhub.js -c jsdoc.json --destination docs && open docs/index.html",
-    "prepublish": "npm run build",
+    "prepublish": "yarn build",
     "test": "cross-env NODE_ENV=test nyc mocha"
   },
   "repository": {
