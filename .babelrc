@@ -1,8 +1,7 @@
 {
   "comments": false,
   "presets": [
-    "es2015",
-    "stage-0"
+    "env"
   ],
   "plugins": [
     "transform-class-properties"

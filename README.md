@@ -139,7 +139,47 @@ and import it into your project as follows
     
 or with ES5
 
-    var EventHub = require('eventhub-xxl');
+    var EventHub = require('eventhub-xxl').EventHub;
+    
+### Run in the browser
+There are a couple of ways to run this library in the browser. 
+
+  a) If you use `import` or `require` in you project
+  
+    import { EventHub } from 'eventhub-xxl';
+   
+    var EventHub = require('di-xxl').EventHub;
+   
+   you need to `browserify` it first. For es2015 use [babelify](https://github.com/babel/babelify) 
+   
+    $> ./node_modules/.bin/browserify index.js -o bundle.js -t [ babelify --presets [ env ] ]
+    
+  and for es5 you only need to do
+  
+    $> ./node_modules/.bin/browserify index.js -o bundle.js
+    
+  b) With RequireJs you have to use the [UMD](https://github.com/umdjs/umd) [named module](http://requirejs.org/docs/api.html#modulename) 
+  
+      requirejs.config({
+          paths: {
+              xxl: './node_modules/eventhub-xxl/dist/eventhub.umd.min'
+          }
+      });
+  
+      requirejs(['xxl'], function(xxl) {
+          var EventHub = xxl.EventHub;
+          ...
+      });
+      
+   
+  c) or without any loaders by simply adding a script element
+   
+    <script src="./node_modules/eventhub-xxl/dist/eventhub.umd.min.js"></script>
+    <script>
+        var EventHub = xxl.EventHub;
+        ...
+    </script> 
+  
 
 [travis-url]: https://travis-ci.org/scaljeri/eventhub-xxl.png
 [travis-image]: https://travis-ci.org/scaljeri/eventhub-xxl
