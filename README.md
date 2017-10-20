@@ -148,7 +148,7 @@ There are a couple of ways to run this library in the browser.
   
     import { EventHub } from 'eventhub-xxl';
    
-    var EventHub = require('di-xxl').EventHub;
+    var EventHub = require('eventhub-xxl').EventHub;
    
    you need to `browserify` it first. For es2015 use [babelify](https://github.com/babel/babelify) 
    
