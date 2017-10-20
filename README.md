@@ -1,6 +1,6 @@
 [![CircleCI][circleci-img]][circleci-url]
 
-[![Coverage Status][coveralls-url]][coveralls-image] [![devDependency Status][depstat-dev-image]][depstat-dev-url] [![Inline docs](http://inch-ci.org/github/scaljeri/eventhub-xxl.svg?branch=master)](http://inch-ci.org/github/scaljeri/eventhub-xxl)
+[![Coverage Status][coveralls-url]][coveralls-image] [![devDependency Status][depstat-dev-image]][depstat-dev-url] 
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scaljeri/javascript-eventhub?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -19,7 +19,7 @@ To register a callback for an event run
     
 and to trigger
 
-    eh.trigger('login', 'succes');
+    eh.trigger('login', 'success');
     
 `succes` is the data given to `myFunc`. 
 

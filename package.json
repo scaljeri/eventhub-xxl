@@ -1,10 +1,15 @@
 {
   "name": "eventhub-xxl",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Event Hub for event-based applications",
-  "main": "./dist/eventhub.min.js",
+  "main": "./dist/eventhub.umd.js",
+  "module": "./dist/eventhub.min.js",
+  "es2015": "./src/eventhub.js",
+  "tonicExampleFilename": "runkit.js",
   "scripts": {
-    "build": "mkdir -p dist && ./node_modules/.bin/babel ./src/eventhub.js --out-file dist/eventhub.js && ./node_modules/.bin/uglifyjs dist/eventhub.js -o dist/eventhub.min.js",
+    "build": "mkdir -p dist && ./node_modules/.bin/npm-run-all build:*",
+    "build:es5": "./node_modules/.bin/babel ./src/eventhub.js -o dist/eventhub.js && ./node_modules/.bin/uglifyjs -o dist/eventhub.min.js dist/eventhub.js",
+    "build:umd": "./node_modules/.bin/babel --module-id xxl --plugins transform-es2015-modules-umd ./src/eventhub.js -o ./dist/eventhub.umd.js && ./node_modules/.bin/uglifyjs -o dist/eventhub.umd.min.js dist/eventhub.umd.js",
     "lint": "./node_modules/.bin/eslint -c .eslintrc ./src/eventhub.js",
     "doc": "./node_modules/.bin/jsdoc src/eventhub.js -c jsdoc.json --destination docs && open docs/index.html",
     "prepublish": "yarn build",
@@ -33,15 +38,18 @@
     "babelify": "^7.3.0",
     "browserify": "^14.3.0",
     "chai": "^4.0.2",
-    "chai-arrays": "^1.0.0",
+    "chai-arrays": "^2.0.0",
     "chai-as-promised": "^7.1.1",
     "cross-env": "^5.0.1",
     "jsdoc": "^3.5.4",
     "jsdoc-escape-at": "^1.0.1",
-    "mocha": "^3.4.2",
+    "mocha": "^4.0.1",
     "nyc": "^11.0.3",
-    "sinon": "^3.2.0",
+    "sinon": "^4.0.1",
     "sinon-chai": "^2.11.0",
     "uglify-js": "^3.0.28"
+  },
+  "dependencies": {
+    "npm-run-all": "^4.1.1"
   }
 }
