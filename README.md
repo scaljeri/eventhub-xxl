@@ -106,6 +106,27 @@ By default is is possible to register a callback multiple times for the same eve
 This can be disabled by doing
 
     eh.allowMultiple(false);
+    
+### Traverse to children
+Consider the following setup
+
+    eh.on('bar', funcA, {phase: EventHub.PHASES.BOTH);
+    eh.on('bar.foo', funcB);
+    eh.on('bar.foo.baz', funcc, {phase: EventHub.PHASES.BOTH);
+    eh.on('bar.foo.baz.moz', funD);
+    
+With the `traverse` option set
+
+    eh.trigger('bar.foo', { traverse: true });
+    
+it will trigger the following sequence of callbacks
+
+    funcA
+    funcB
+    funcD
+    funcA
+    
+So, this option will traverse deeper into the namespace and only triggers callbacks without a phase.
 
 ### Fake it
 A `trigger`, an `off`, an `on` or `one` can be simulated, meaning no callbacks are actually triggered,
