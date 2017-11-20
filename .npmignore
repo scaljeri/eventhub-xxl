@@ -12,7 +12,7 @@ CVS
 npm-debug.log
 .circlci
 node_modules
-test
+tests
 .gitignore
 .DS_Store
 .circleci
