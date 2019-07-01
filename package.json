@@ -1,6 +1,6 @@
 {
   "name": "eventhub-xxl",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Event Hub for event-based applications",
   "main": "./dist/eventhub.min.js",
   "types": "./dist/eventhub.d.ts",
@@ -43,7 +43,7 @@
     "babel-preset-stage-0": "6.24.1",
     "babelify": "10.0.0",
     "bencha": "0.0.2",
-    "browserify": "14.3.0",
+    "browserify": "16.2.3",
     "chai": "4.2.0",
     "chai-arrays": "2.0.0",
     "chai-as-promised": "7.1.1",
@@ -63,7 +63,7 @@
     "tsdoc": "^0.0.4",
     "tslint": "5.18.0",
     "tslint-config-prettier": "1.18.0",
-    "typescript": "3.4.5",
+    "typescript": "3.5.2",
     "uglify-js": "3.6.0"
   }
 }

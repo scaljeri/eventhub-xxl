@@ -9,7 +9,7 @@ Javascript Eventhub Library
 This is an Event Hub for event-based applications. It facilitates event-based communication between different 
 parts of an application (Event driven system). 
 
-To register a callback for an event run
+To register a callback for an event do
 
     import {EventHub} from 'eventhub-xxl';
     
@@ -65,7 +65,7 @@ Example:
     eventHub.on('bar', myFunc1);                                            
     eventHub.on('bar.foo', myFunc2, {phase: EventHub.PHASES.CAPTURING}) ;  
     eventHub.on('bar.foo', myFunc3, {phase: EventHub.PHASES.BUBBLING}) ;  
-    eventHub.on('bar.foo.baz', myFunc4, {phase: EventHub.EVENT_MODE.BOTH) ;  // added to both phases
+    eventHub.on('bar.foo.baz', myFunc4, {phase: EventHub.PHASES.BOTH) ;  // added to both phases
     eventHub.on('bar.foo.baz', myFunc5) ;                                    
     
     eventHub.trigger('bar.foo.baz') ; 
@@ -90,17 +90,17 @@ As mentioned above, a callback can be registered using `on`
 `one` is identical, but the callback is removed after it has been executed
 
 ### Disable / Enable
-Sometimes it might be useful to disable parts of the namespace. 
+To ignore triggers for an event it can be disabled
 
     eh.disable('bar.foo');
-    eh.trigger('bar.foo.baz'); // Only triggers: myFunc5
-    
+
+All triggers for `bar.foo` are ignored (no propagation). However, if `bar.foo` is part of 
+the namespace, callbacks part of phases continue working.
+
 To enable a namespace again do
 
     eh.enable('bar.foo')
     
-Note: You cannot trigger a disabled namespace directly
-
 ### Multiple
 By default it is possible to register a callback multiple times for the same event. 
 This can be disabled by doing
@@ -112,7 +112,7 @@ Consider the following setup
 
     eh.on('bar', funcA, {phase: EventHub.PHASES.BOTH);
     eh.on('bar.foo', funcB);
-    eh.on('bar.foo.baz', funcc, {phase: EventHub.PHASES.BOTH);
+    eh.on('bar.foo.baz', funcC, {phase: EventHub.PHASES.BOTH);
     eh.on('bar.foo.baz.moz', funD);
     
 With the `traverse` option set
@@ -140,7 +140,7 @@ but it will return the amount of callbacks triggered.
 
 Install the dependencies as follows
 
-    $> yarn install 
+    $> yarn
 
 To build and minify
 
@@ -179,29 +179,6 @@ There are a couple of ways to run this library in the browser.
   
     $> ./node_modules/.bin/browserify index.js -o bundle.js
     
-  b) With RequireJs you have to use the [UMD](https://github.com/umdjs/umd) [named module](http://requirejs.org/docs/api.html#modulename) 
-  
-      requirejs.config({
-          paths: {
-              xxl: './node_modules/eventhub-xxl/dist/eventhub.umd.min'
-          }
-      });
-  
-      requirejs(['xxl'], function(xxl) {
-          var EventHub = xxl.EventHub;
-          ...
-      });
-      
-   
-  c) or without any loaders by simply adding a script element
-   
-    <script src="./node_modules/eventhub-xxl/dist/eventhub.umd.min.js"></script>
-    <script>
-        var EventHub = xxl.EventHub;
-        ...
-    </script> 
-  
-
 [travis-url]: https://travis-ci.org/scaljeri/eventhub-xxl.png
 [travis-image]: https://travis-ci.org/scaljeri/eventhub-xxl
 

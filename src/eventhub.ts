@@ -13,40 +13,34 @@
 }
 */
 
-export interface IOnOptions {
-    phase: PHASES;
-    isOne: boolean;
-    prepend: boolean;
-}
-
-export interface ITriggerOptions {
+export interface IOptions {
     phase?: PHASES;
+    isOne?: boolean;
+    prepend?: boolean;
+    traverse?: boolean;
 }
 
-export interface IDispatcher<T = any> {
-    callback: (data: T) => void;
-    data: T;
-    phase: PHASES;
+interface IDispatcher {
+    (callback: (data: any) => void, data: any, phase: PHASES): void; 
 }
 
-interface ICallback<T = any> {
-    fn: (data?: T) => void;
+interface ICallback {
+    fn: (data?: any) => void;
     phase: PHASES;
     isOne: boolean;
 }
 
-interface IStackItem<T = any> {
+interface IStackItem {
     disabled: boolean;
     triggers: number;
-    on: ICallback<T>[];
-    one: ICallback<T>[];
+    on: ICallback[];
+    one: ICallback[];
 }
 
-interface IStackPart {
-    [key: string]: IStack;
+interface IStack { 
+    __stack: IStackItem;
+    [key: string]: IStackItem | IStack;
 }
-
-declare type IStack = { __stack: IStackItem } & IStackPart;
 
 export enum PHASES {
     /**
@@ -201,7 +195,7 @@ export class EventHub {
      * @param {object} [options] configuration
      * @param {boolean} [options.traverse=false] enable nested events if set to true
      */
-    enable(event: string | IStack, options: { traverse?: boolean } = {}, defaultState = false) {
+    enable(event: string | IStack, options: IOptions = {}, defaultState = false) {
         let namespace = event as IStack;
 
         if (typeof event === 'string') {
@@ -215,7 +209,7 @@ export class EventHub {
                     namespace.__stack.disabled = defaultState;
                 }
                 else if (options.traverse) {
-                    this.enable(namespace[i], options, defaultState);
+                    this.enable(namespace[i] as IStack, options, defaultState);
                 }
             }
         }
@@ -246,7 +240,7 @@ export class EventHub {
      * @param {object} [options] configuration
      * @param {boolean} [options.traverse=false] disable nested events
      */
-    disable(event, options = {}) {
+    disable(event: string, options: IOptions = {}) {
         return this.enable(event, options, true);
     }
 
@@ -277,13 +271,10 @@ export class EventHub {
      * eventHub.trigger('ui.update',) ;                       // trigger the 'update' event inside the 'ui' namespace
      * eventHub.trigger('ui', {traverse: true} ) ;            // trigger the 'update' event and all nested events
      */
-    trigger(event: string, data: any, options: ITriggerOptions, dispatcher: () => void | ICallback): number {
+    trigger(event: string, data?: any, options: IOptions = {}, dispatcher?: IDispatcher): number {
         let retVal = 0;
 
-        if (!options) {
-            options = {};
-        }
-        else if (options.phase === PHASES.BOTH) {
+        if (options.phase === PHASES.BOTH) {
             options = Object.assign({}, options, { phase: null });
         }
 
@@ -332,7 +323,7 @@ export class EventHub {
      * eventHub.on( 'ui.update', myFunc1) ;
      * eventHub.on( 'ui.update', myFunc2, {prepend: true, phase: PHASES.CAPTURING} ) ;
      */
-    on<T = any>(event: string, callback: (dat: T) => void, options: IOnOptions, isFake = false) {
+    on(event: string, callback: (data: any) => void, options?: IOptions, isFake = false) {
         return addCallbackToStack.call(this, event, callback, options || {}, isFake);
     }
 
@@ -352,7 +343,7 @@ export class EventHub {
      * eventHub.one( 'ui.update', myFunc2, {prepend: true, phase: PHASES.CAPTURING} ) ;
      *
      */
-    one(event, callback, options, isFake) {
+    one(event: string, callback: (data?: any) => void , options: IOptions, isFake: boolean) {
         return addCallbackToStack.call(this, event, callback,
             Object.assign({}, (options || {}), { isOne: true }), isFake);
     }
@@ -374,9 +365,9 @@ export class EventHub {
      * eventHub.off('ui.update', myFunc, {phase: PHASES.CAPTURING}) ;
      * eventHub.off('ui') ; // Remove all callbacks for event `ui`
      */
-    off(event, callback, options, isFake) {
+    off(event: string, callback?: (data?: any) => void | IOptions, options?: IOptions, isFake = false) {
         if (typeof callback !== 'function') {
-            options = callback;
+            options = callback as IOptions;
             callback = null;
         }
 
@@ -392,7 +383,7 @@ export class EventHub {
      * @param {boolean} [options.traverse=false] traverse all nested events
      * @return {Number} the amount of trigger for the given event name
      */
-    getTriggersFor(event: string, options: { traverse?: boolean } = {}, namespace = getStack.call(this, event)) {
+    getTriggersFor(event: string, options: IOptions = {}, namespace = getStack.call(this, event)) {
         let retVal = namespace.__stack.triggers;
 
         if (options.traverse) {
@@ -579,7 +570,7 @@ function createStack(namespace) {
     return stack;
 }
 
-function triggerEventCapture(event: string, data: any, options: ITriggerOptions, dispatcher) {
+function triggerEventCapture(event: string, data: any, options: IOptions, dispatcher: IDispatcher) {
     let i
         , namespace = this.rootStack
         , parts = event ? event.split('.') : []
@@ -597,7 +588,7 @@ function triggerEventCapture(event: string, data: any, options: ITriggerOptions,
     return retVal;
 }
 
-function triggerEventBubble(namespace, data, options, dispatcher) {
+function triggerEventBubble(namespace, data, options, dispatcher: IDispatcher) {
     let phase = PHASES.BUBBLING
         , retVal = 0;
 
@@ -611,7 +602,7 @@ function triggerEventBubble(namespace, data, options, dispatcher) {
     return retVal;
 }
 
-function triggerEvent(stack, data, options, dispatcher) {
+function triggerEvent(stack, data, options, dispatcher: IDispatcher) {
     let retVal = callCallbacks(stack, data, null, dispatcher);
 
     if (options.traverse) {                             // found a deeper nested namespace
@@ -629,7 +620,7 @@ function triggerEvent(stack, data, options, dispatcher) {
  This method triggers callbacks within a given namespace for a specific phase. If a callback `isOne` it
  is removed from the namespace
  */
-function callCallbacks(namespace, data, phase, dispatcher) {
+function callCallbacks(namespace: IStack, data: any, phase: PHASES, dispatcher: IDispatcher) {
     let i = namespace.__stack.on.length
         , retVal = 0
         , callback;
