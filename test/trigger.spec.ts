@@ -1,4 +1,4 @@
-import {EventHub, sinon} from './helpers';
+import {EventHub, sinon, it, describe, beforeEach} from './helpers';
 
 describe('#trigger', () => {
     let eh,
@@ -33,9 +33,9 @@ describe('#trigger', () => {
         sinon.stub(console, 'warn');
         eh.on('a.b', {});
 
-        console.warn.should.have.been.calledWithMatch(/Cannot.*eventName=a.b/);
+        console.warn['should'].have.been.calledWithMatch(/Cannot.*eventName=a.b/);
 
-        console.warn.restore();
+        console.warn['restore']();
     });
 
     it('should count the trigger', () => {

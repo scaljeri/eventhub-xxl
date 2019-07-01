@@ -1,4 +1,4 @@
-import {EventHub} from './helpers';
+import {EventHub, it, describe, beforeEach} from './helpers';
 
 describe('Phase: Both', () => {
     let eh,

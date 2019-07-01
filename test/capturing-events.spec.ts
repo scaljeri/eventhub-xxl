@@ -1,6 +1,6 @@
-import {EventHub} from './helpers';
+import {EventHub, it, describe, beforeEach} from './helpers';
 
-describe('Bubbling phase', () => {
+describe('Eventhub - Capturing mode', () => {
     let eh,
         count,
         data,
@@ -17,16 +17,15 @@ describe('Bubbling phase', () => {
         eh = new EventHub();
         data = [];
 
-        eh.on('a', cbs.cb1, {phase: EventHub.PHASES.BUBBLING});
-        eh.on('a.b', cbs.cb2, {phase: EventHub.PHASES.BUBBLING});
-        eh.on('a.b.c', cbs.cb4, {phase: EventHub.PHASES.BUBBLING});
+        eh.on('a', cbs.cb1, {phase: EventHub.PHASES.CAPTURING});
+        eh.on('a.b', cbs.cb2, {phase: EventHub.PHASES.CAPTURING});
+        eh.on('a.b.c', cbs.cb4, {phase: EventHub.PHASES.CAPTURING});
         eh.on('a.b', cbs.cb5);
         eh.on('a.b.c', cbs.cb6);
-        eh.on('a.b', cbs.cb3, {phase: EventHub.PHASES.BUBBLING, prepend: true});
-        eh.on('a.b.c.d', cbs.cb3, {phase: EventHub.PHASES.BUBBLING});
-        eh.on('a.b.c.d.e', cbs.cb3);
+        eh.on('a.b', cbs.cb3, {phase: EventHub.PHASES.CAPTURING, prepend: true});
+        eh.on('a.b.c.d', cbs.cb3, {phase: EventHub.PHASES.CAPTURING});
 
-        count = eh.trigger('a.b.c', 1);
+        count = eh.trigger('a.b.c', 1, {phase: EventHub.PHASES.CAPTURING});
     });
 
     it('should count the trigger', () => {
@@ -36,24 +35,27 @@ describe('Bubbling phase', () => {
         eh.getTriggersFor('a.b.c.d').should.equal(0);
     });
 
-    it('should count callbacks without an evena tname', () => {
-        eh.fake.trigger(null, {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
-        eh.fake.trigger('', {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
+
+    it('should count callbacks without an event name', () => {
+        eh.fake.trigger('', {phase: EventHub.PHASES.CAPTURING}).should.equal(0);
     });
 
     it('should count callbacks', () => {
-        eh.fake.trigger('a', {phase: EventHub.PHASES.BUBBLING}).should.equal(0);
-        eh.fake.trigger('a.b', {phase: EventHub.PHASES.BUBBLING}).should.equal(2);
-        eh.fake.trigger('a.b.c', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
-        eh.fake.trigger('a.b.c.d', {phase: EventHub.PHASES.BUBBLING}).should.equal(4);
-        eh.fake.trigger('a.b.c.d.e', {phase: EventHub.PHASES.BUBBLING}).should.equal(6);
+        eh.fake.trigger('a', {phase: EventHub.PHASES.CAPTURING}).should.equal(0);
+        eh.fake.trigger('a.b', {phase: EventHub.PHASES.CAPTURING}).should.equal(2);
+        eh.fake.trigger('a.b.c', {phase: EventHub.PHASES.CAPTURING}).should.equal(4);
+        eh.fake.trigger('a.b.c.d', {phase: EventHub.PHASES.CAPTURING}).should.equal(4);
+    });
+
+    it('should not trigger if event does not exist', () => {
+        eh.fake.trigger('a.b.c.d.e', {phase: EventHub.PHASES.CAPTURING}).should.equal(0);
     });
 
     it('should count and traverse', () => {
         eh.fake.trigger('a.b', {
-            phase: EventHub.PHASES.BUBBLING,
+            phase: EventHub.PHASES.CAPTURING,
             traverse: true
-        }).should.equal(4);
+        }).should.equal(3);
     });
 
     it('should have triggered the correct amount of callbacks', () => {
@@ -61,10 +63,10 @@ describe('Bubbling phase', () => {
     });
 
     it('should have called everything in the right order', () => {
-        data[0].name.should.equal('cb6');
+        data[0].name.should.equal('cb1');
         data[1].name.should.equal('cb3');
         data[2].name.should.equal('cb2');
-        data[3].name.should.equal('cb1');
+        data[3].name.should.equal('cb6');
     });
 
     it('should have passed `data` to all callbacks', () => {

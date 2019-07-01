@@ -1,4 +1,4 @@
-import {EventHub} from './helpers';
+import {EventHub, it, describe, beforeEach} from './helpers';
 
 describe('Multiple', () => {
     let eh,
@@ -64,7 +64,7 @@ describe('Multiple', () => {
         });
 
         it('should have added only unique callbacks', () => {
-           isAdded.should.eql([true, false, true, false, true, false, false, false, true]);
+           isAdded['should'].eql([true, false, true, false, true, false, false, false, true]);
         });
 
         it('should have registered cb1 only once for each event mode', () => {

@@ -1,4 +1,4 @@
-import {EventHub} from './helpers';
+import {EventHub, it, describe} from './helpers';
 
 describe('Eventmode: Both', () => {
     let eh1, eh2;

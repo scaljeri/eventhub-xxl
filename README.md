@@ -102,7 +102,7 @@ To enable a namespace again do
 Note: You cannot trigger a disabled namespace directly
 
 ### Multiple
-By default is is possible to register a callback multiple times for the same event. 
+By default it is possible to register a callback multiple times for the same event. 
 This can be disabled by doing
 
     eh.allowMultiple(false);
