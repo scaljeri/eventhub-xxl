@@ -343,7 +343,7 @@ export class EventHub {
      * eventHub.one( 'ui.update', myFunc2, {prepend: true, phase: PHASES.CAPTURING} ) ;
      *
      */
-    one(event: string, callback: (data?: any) => void , options: IOptions, isFake: boolean) {
+    one(event: string, callback: (data?: any) => void , options: IOptions = {}, isFake = false) {
         return addCallbackToStack.call(this, event, callback,
             Object.assign({}, (options || {}), { isOne: true }), isFake);
     }
