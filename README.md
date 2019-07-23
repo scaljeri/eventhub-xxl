@@ -11,9 +11,11 @@ parts of an application (Event driven system).
 
 To register a callback for an event do
 
-    import {EventHub} from 'eventhub-xxl';
+    import {EventHub, IEHContext} from 'eventhub-xxl';
     
     const eh = new EventHub();
+
+    function myFunc(data: string, context: IEHContext) { ... }
     
     eh.on('login', myFunc);
     
@@ -21,7 +23,7 @@ and to trigger
 
     eh.trigger('login', 'success');
     
-`succes` is the data given to `myFunc`. 
+The string `succes` (which can be anything of course) is the data given to `myFunc` together with a context object which describes the event that occurred (more on that below) 
 
 But, event names can be namespaced
   
@@ -136,6 +138,41 @@ added or removed
     
 but it will return the amount of callbacks triggered.
 
+### The Context object 
+As mentioned above, the context object passed as the second argument to a callback function describes the event that occured. Consider the following setup
+
+    eh.on('action.list', cb1, { phase: DI.PHASES.BUBBLING });
+    eh.on('action.list.action', cb2);
+    eh.trigger('action.list', { data });
+
+`cb1` receives the following context object
+
+    {
+        phase: 'bubbling'
+        trigger: 'action.list.remove',
+        event: 'action.list',
+    }
+
+and `cb2` gets
+
+    {
+        phase: null,
+        trigger: 'action.list.remove',
+        event: 'action.list.remove'
+    }
+
+
+
+This information describes in which phase the callback was called. In the above example, the callback was registered as follows
+
+    eh.on('action', myFunc, {phase: EventHub.PHASES.BUBBLING);
+
+and triggered like this
+
+    eg.trigger('action.list.remove', { ... } );
+
+This object can be useful if you use a callback function multiple times at different places in namespaces or if `cb1`, for example, needs to know if `action.list.delete` or `action.list.add` was triggered
+
 ### Yarn tasks ###
 
 Install the dependencies as follows
@@ -149,18 +186,6 @@ To build and minify
 To run the tests
 
     $> yarn test
-    
-### Installation ###
-
-    $> yarn add eventhub-xxl
-    
-and import it into your project as follows
-
-    import { EventHub } from 'eventhub-xxl';
-    
-or with ES5
-
-    var EventHub = require('eventhub-xxl').EventHub;
     
 ### Run in the browser
 There are a couple of ways to run this library in the browser. 

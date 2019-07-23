@@ -13,35 +13,6 @@
 }
 */
 
-export interface IOptions {
-    phase?: PHASES;
-    isOne?: boolean;
-    prepend?: boolean;
-    traverse?: boolean;
-}
-
-interface IDispatcher {
-    (callback: (data: any) => void, data: any, phase: PHASES): void; 
-}
-
-interface ICallback {
-    fn: (data?: any) => void;
-    phase: PHASES;
-    isOne: boolean;
-}
-
-interface IStackItem {
-    disabled: boolean;
-    triggers: number;
-    on: ICallback[];
-    one: ICallback[];
-}
-
-interface IStack { 
-    __stack: IStackItem;
-    [key: string]: IStackItem | IStack;
-}
-
 export enum PHASES {
     /**
  * Defines the capturing event phase
@@ -61,6 +32,40 @@ export enum PHASES {
      * @static
      */
     , BOTH = 'both'
+}
+
+export interface IOptions {
+    phase?: PHASES;
+    isOne?: boolean;
+    prepend?: boolean;
+    traverse?: boolean;
+}
+
+export interface IEHContext {
+    phase: PHASES,
+    event: string
+}
+
+interface IDispatcher {
+    (callback: (data: any) => void, data: any, context: IEHContext): void; 
+}
+
+interface ICallback {
+    fn: (data?: any, phase?: PHASES, event?: string) => void;
+    phase: PHASES;
+    isOne: boolean;
+}
+
+interface IStackItem {
+    disabled: boolean;
+    triggers: number;
+    on: ICallback[];
+    one: ICallback[];
+}
+
+interface IStack { 
+    __stack: IStackItem;
+    [key: string]: IStackItem | IStack;
 }
 
 // declare type IStack = Record<string, IStackItem | IStack>;
@@ -280,14 +285,15 @@ export class EventHub {
 
         if (this.canTrigger(event)) {
             const namespace = getStack.call(this, event),
-                phase = options.phase;
+                phase = options.phase,  
+                eventName = event && event.match(/[^\.]+$/)[0];
 
             retVal =
                 triggerEventCapture.call(this, event, data, options, dispatcher)
                 +
-                triggerEvent(namespace, data, options, dispatcher)
+                triggerEvent(namespace, event, data, options, dispatcher)
                 +
-                triggerEventBubble.call(this, namespace, data, options, dispatcher);
+                triggerEventBubble.call(this, namespace, event, data, options, dispatcher);
 
             namespace.__stack.triggers++;                                             // count the trigger
             // namespace.__stack.one = [] ;                                                // cleanup
@@ -570,45 +576,51 @@ function createStack(namespace) {
     return stack;
 }
 
-function triggerEventCapture(event: string, data: any, options: IOptions, dispatcher: IDispatcher) {
+function triggerEventCapture(trigger: string, data: any, options: IOptions, dispatcher: IDispatcher) {
     let i
         , namespace = this.rootStack
-        , parts = event ? event.split('.') : []
+        , parts = trigger ? trigger.split('.') : []
         , phase = PHASES.CAPTURING
-        , retVal = 0;
+        , retVal = 0
+        , event = parts[0];
+
 
     if (parts.length > 1 && (!options.phase || options.phase === phase)) {
         for (i = 0; i < parts.length - 1; i++)           // loop through namespace (not the last part)
         {
             namespace = namespace[parts[i]];
-            retVal += callCallbacks(namespace, data, phase, dispatcher);
+            retVal += callCallbacks(namespace, event, trigger, data, phase, dispatcher);
+            event += `.${parts[i+1]}`;
         }
     }
 
     return retVal;
 }
 
-function triggerEventBubble(namespace, data, options, dispatcher: IDispatcher) {
+function triggerEventBubble(namespace, trigger: string, data, options, dispatcher: IDispatcher) {
     let phase = PHASES.BUBBLING
-        , retVal = 0;
+        , retVal = 0
+        , event = trigger
+        , stripNsRe = /\.[^\.]+$/;
 
     if (!options.phase || options.phase === phase) {
         while (namespace && namespace.__stack.parent) {
             namespace = namespace.__stack.parent;
-            retVal += callCallbacks(namespace, data, phase, dispatcher);
+            event = event.replace(stripNsRe, '');
+            retVal += callCallbacks(namespace, event, trigger, data, phase, dispatcher);
         }
     }
 
     return retVal;
 }
 
-function triggerEvent(stack, data, options, dispatcher: IDispatcher) {
-    let retVal = callCallbacks(stack, data, null, dispatcher);
+function triggerEvent(stack, trigger: string, data, options, dispatcher: IDispatcher) {
+    let retVal = callCallbacks(stack, trigger, trigger, data, null, dispatcher);
 
     if (options.traverse) {                             // found a deeper nested namespace
         for (let ns in stack) {
             if (stack.hasOwnProperty(ns) && ns !== '__stack' && stack[ns].__stack) {
-                retVal += triggerEvent(stack[ns], data, options, dispatcher);
+                retVal += triggerEvent(stack[ns], trigger, data, options, dispatcher);
             }
         }
     }
@@ -620,7 +632,7 @@ function triggerEvent(stack, data, options, dispatcher: IDispatcher) {
  This method triggers callbacks within a given namespace for a specific phase. If a callback `isOne` it
  is removed from the namespace
  */
-function callCallbacks(namespace: IStack, data: any, phase: PHASES, dispatcher: IDispatcher) {
+function callCallbacks(namespace: IStack, event: string, trigger: string, data: any, phase: PHASES, dispatcher: IDispatcher) {
     let i = namespace.__stack.on.length
         , retVal = 0
         , callback;
@@ -628,7 +640,7 @@ function callCallbacks(namespace: IStack, data: any, phase: PHASES, dispatcher: 
     while (callback = namespace.__stack.on[--i]) {
         if ((!callback.phase && !phase) || callback.phase === phase) {
             retVal++;                                                           // count this trigger
-            dispatcher ? dispatcher(callback, data, phase) : callback.fn(data); // call the callback
+            dispatcher ? dispatcher(callback, data, {phase, event}) : callback.fn(data, {phase, event, trigger}); // call the callback
 
             if (callback.isOne) {
                 namespace.__stack.on.splice(i, 1);                              // remove callback for index is i, and afterwards fix loop index with i--

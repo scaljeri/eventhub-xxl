@@ -1,16 +1,17 @@
-import {EventHub, it, describe, beforeEach} from './helpers';
+import {EventHub, it, describe, beforeEach, should} from './helpers';
+import { PHASES } from '../src/eventhub';
 
 describe('Eventhub - Capturing mode', () => {
     let eh,
         count,
         data,
         cbs = {
-            cb1: (value) => data.push({name: 'cb1', value}),
-            cb2: (value) => data.push({name: 'cb2', value}),
-            cb3: (value) => data.push({name: 'cb3', value}),
-            cb4: (value) => data.push({name: 'cb4', value}),
-            cb5: (value) => data.push({name: 'cb5', value}),
-            cb6: (value) => data.push({name: 'cb6', value})
+            cb1: (value, context) => data.push({ name: 'cb1', value, context }),
+            cb2: (value, context) => data.push({ name: 'cb2', value, context }),
+            cb3: (value, context) => data.push({ name: 'cb3', value, context }),
+            cb4: (value, context) => data.push({ name: 'cb4', value, context }),
+            cb5: (value, context) => data.push({ name: 'cb5', value, context }),
+            cb6: (value, context) => data.push({ name: 'cb6', value, context })
         };
 
     beforeEach(() => {
@@ -75,4 +76,27 @@ describe('Eventhub - Capturing mode', () => {
         data[2].value.should.equal(1);
         data[3].value.should.equal(1);
     });
+
+    describe('Call with context', () => {
+        it('should first call with capture phase', () => {
+            data[0].context.phase.should.equal(PHASES.CAPTURING);
+            data[0].context.event.should.equal('a');
+            data[0].context.trigger.should.equal('a.b.c');
+
+            data[1].context.phase.should.equal(PHASES.CAPTURING);
+            data[1].context.event.should.equal('a.b');
+            data[1].context.trigger.should.equal('a.b.c');
+
+            data[2].context.phase.should.equal(PHASES.CAPTURING);
+            data[2].context.event.should.equal('a.b');
+            data[2].context.trigger.should.equal('a.b.c');
+        });
+
+        it('should last call without a phase', () => {
+            should.exist(data[0].context);
+            data[3].context.event.should.equal('a.b.c');
+            data[3].context.trigger.should.equal('a.b.c');
+            should.not.exist(data[3].context.phase);
+        });
+    })
 });
