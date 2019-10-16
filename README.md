@@ -6,26 +6,23 @@
 
 Javascript Eventhub Library 
 
-This is an Event Hub for event-based applications. It facilitates event-based communication between different 
-parts of an application (Event driven system). 
+This is an Event Hub for event-based applications. It facilitates event-based communication between different parts of an application (Event driven system). 
 
-To register a callback for an event do
+To start listening for an event, register a callback for that event
 
-    import {EventHub, IEHContext} from 'eventhub-xxl';
+    import {EventHub} from 'eventhub-xxl';
     
     const eh = new EventHub();
-
-    function myFunc(data: string, context: IEHContext) { ... }
     
     eh.on('login', myFunc);
     
-and to trigger
+Now, myFunc will be called when the `login` event is triggered. To trigger an event do
 
     eh.trigger('login', 'success');
     
-The string `succes` (which can be anything of course) is the data given to `myFunc` together with a context object which describes the event that occurred (more on that below) 
+`succes` is the data passed with this event and given to `myFunc`. 
 
-But, event names can be namespaced
+But there is more, event names can be namespaced
   
     bar.foo.baz
     
@@ -67,13 +64,12 @@ Example:
     eventHub.on('bar', myFunc1);                                            
     eventHub.on('bar.foo', myFunc2, {phase: EventHub.PHASES.CAPTURING}) ;  
     eventHub.on('bar.foo', myFunc3, {phase: EventHub.PHASES.BUBBLING}) ;  
-    eventHub.on('bar.foo.baz', myFunc4, {phase: EventHub.PHASES.BOTH) ;  // added to both phases
+    eventHub.on('bar.foo.baz', myFunc4, {phase: EventHub.EVENT_MODE.BOTH) ;  // added to both phases
     eventHub.on('bar.foo.baz', myFunc5) ;                                    
     
     eventHub.trigger('bar.foo.baz') ; 
   
-`bar.foo` is the namespace and the EventHub will begin with the CAPTURING phase, meaning it will first execute
-`myFunc2`. Note that `myFunc1` is skipped, because it does not belong to a phase! The execution order is
+`bar.foo` is the namespace and the EventHub will begin with the `CAPTURING` phase, meaning it will first execute `myFunc2`. Note that `myFunc1` is skipped, because it does not belong to a phase! The execution order is
 
     myFunc2     // capturing 
     myFunc5     // end-point
@@ -92,19 +88,17 @@ As mentioned above, a callback can be registered using `on`
 `one` is identical, but the callback is removed after it has been executed
 
 ### Disable / Enable
-To ignore triggers for an event it can be disabled
+Sometimes it might be useful to disable parts of the namespace. 
 
     eh.disable('bar.foo');
-
-All triggers for `bar.foo` are ignored (no propagation). However, if `bar.foo` is part of 
-the namespace, callbacks part of phases continue working.
-
+    eh.trigger('bar.foo.baz'); // Only triggers: myFunc5
+    
 To enable a namespace again do
 
     eh.enable('bar.foo')
     
 ### Multiple
-By default it is possible to register a callback multiple times for the same event. 
+By default is is possible to register a callback multiple times for the same event. 
 This can be disabled by doing
 
     eh.allowMultiple(false);
@@ -114,7 +108,7 @@ Consider the following setup
 
     eh.on('bar', funcA, {phase: EventHub.PHASES.BOTH);
     eh.on('bar.foo', funcB);
-    eh.on('bar.foo.baz', funcC, {phase: EventHub.PHASES.BOTH);
+    eh.on('bar.foo.baz', funcc, {phase: EventHub.PHASES.BOTH);
     eh.on('bar.foo.baz.moz', funD);
     
 With the `traverse` option set
@@ -131,53 +125,17 @@ it will trigger the following sequence of callbacks
 So, this option will traverse deeper into the namespace and only triggers callbacks without a phase.
 
 ### Fake it
-A `trigger`, an `off`, an `on` or `one` can be simulated, meaning no callbacks are actually triggered,
-added or removed
+A `trigger` can be simulated, meaning no callbacks are actually triggered, added or removed
 
     eh.fake.trigger('bar.foo.ba'); 
     
-but it will return the amount of callbacks triggered.
-
-### The Context object 
-As mentioned above, the context object passed as the second argument to a callback function describes the event that occured. Consider the following setup
-
-    eh.on('action.list', cb1, { phase: DI.PHASES.BUBBLING });
-    eh.on('action.list.action', cb2);
-    eh.trigger('action.list', { data });
-
-`cb1` receives the following context object
-
-    {
-        phase: 'bubbling'
-        trigger: 'action.list.remove',
-        event: 'action.list',
-    }
-
-and `cb2` gets
-
-    {
-        phase: null,
-        trigger: 'action.list.remove',
-        event: 'action.list.remove'
-    }
-
-
-
-This information describes in which phase the callback was called. In the above example, the callback was registered as follows
-
-    eh.on('action', myFunc, {phase: EventHub.PHASES.BUBBLING);
-
-and triggered like this
-
-    eg.trigger('action.list.remove', { ... } );
-
-This object can be useful if you use a callback function multiple times at different places in namespaces or if `cb1`, for example, needs to know if `action.list.delete` or `action.list.add` was triggered
+it will return the amount of callbacks triggered.
 
 ### Yarn tasks ###
 
 Install the dependencies as follows
 
-    $> yarn
+    $> yarn install 
 
 To build and minify
 
@@ -186,6 +144,18 @@ To build and minify
 To run the tests
 
     $> yarn test
+    
+### Installation ###
+
+    $> yarn add eventhub-xxl
+    
+and import it into your project as follows
+
+    import { EventHub } from 'eventhub-xxl';
+    
+or with ES5
+
+    var EventHub = require('eventhub-xxl').EventHub;
     
 ### Run in the browser
 There are a couple of ways to run this library in the browser. 
@@ -204,6 +174,29 @@ There are a couple of ways to run this library in the browser.
   
     $> ./node_modules/.bin/browserify index.js -o bundle.js
     
+  b) With RequireJs you have to use the [UMD](https://github.com/umdjs/umd) [named module](http://requirejs.org/docs/api.html#modulename) 
+  
+      requirejs.config({
+          paths: {
+              xxl: './node_modules/eventhub-xxl/dist/eventhub.umd.min'
+          }
+      });
+  
+      requirejs(['xxl'], function(xxl) {
+          var EventHub = xxl.EventHub;
+          ...
+      });
+      
+   
+  c) or without any loaders by simply adding a script element
+   
+    <script src="./node_modules/eventhub-xxl/dist/eventhub.umd.min.js"></script>
+    <script>
+        var EventHub = xxl.EventHub;
+        ...
+    </script> 
+  
+
 [travis-url]: https://travis-ci.org/scaljeri/eventhub-xxl.png
 [travis-image]: https://travis-ci.org/scaljeri/eventhub-xxl
 
