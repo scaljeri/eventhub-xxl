@@ -130,7 +130,7 @@ export class EventHub {
 
     private allowMultiple: boolean;
     private eventNameIndex = 0;
-    private rootStack: IStack = { __stack: { disabled: false, triggers: 0, on: [], one: [] } } as IStack;
+    private rootStack: IStack;
     /**
      * An instance represents a unique  event-hub, because instances do not share any data
      *
@@ -140,8 +140,17 @@ export class EventHub {
     */
     constructor(options: { allowMultiple?: boolean } = {}) {
         this.allowMultiple = typeof options.allowMultiple === 'boolean' ? options.allowMultiple : DEFAULTS.ALLOW_MULTIPLE;
+        this.reset();
     }
 
+    /**
+     * Removes the event hub state, meaning all registered callbacks are removed.
+     */
+    reset(): EventHub {
+        this.rootStack = { __stack: { disabled: false, triggers: 0, on: [], one: [] } } as IStack;
+
+        return this;
+    }
     /**
      * Simulates `trigger`, `on`, `one` and `off`, meaning no callbacks are actually triggered,
      * added or removed.

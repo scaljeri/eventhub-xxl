@@ -1,6 +1,6 @@
 {
   "name": "eventhub-xxl",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "Event Hub for event-based applications",
   "main": "./dist/eventhub.min.js",
   "types": "./dist/eventhub.d.ts",
